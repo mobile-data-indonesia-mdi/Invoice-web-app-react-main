@@ -1,39 +1,25 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo_mdi.png";
+import useAuth from "../hooks/useAuth";
 
 function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const { login } = useAuth();
+
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (email === 'admin@example.com' && password === 'admin') {
-      const user = {
-        email,
-        role: "admin",
-      };
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("loggedIn", "true");
-
-      setTimeout(() => {
-        navigate('/invoices'); // ✅ Redirect langsung ke /invoices
-      }, 10);
-    } else if (email === 'user@example.com' && password === 'user') {
-      const user = {
-        email,
-        role: "user",
-      };
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("loggedIn", "true");
-
-      setTimeout(() => {
-        navigate('/invoices'); // ✅ Redirect langsung ke /invoices
-      }, 10);
-    } else {
-      alert('Email atau password salah!');
+    try {
+      console.log("mencoba masuk", username, " ", password);
+      await login(username, password);
+      console.log("berhasil masuk");
+      navigate("/invoices");
+    } catch (error) {
+      alert("username or password is incorrect!");
     }
   };
 
@@ -46,12 +32,12 @@ function Login() {
 
         <form onSubmit={handleLogin}>
           <div className="mb-4 text-left">
-            <label className="block text-gray-700">Email</label>
+            <label className="block text-gray-700">Username</label>
             <input
-              type="email"
+              type="username"
               className="w-full px-3 py-2 border rounded"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>

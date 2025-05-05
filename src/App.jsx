@@ -1,22 +1,20 @@
-import React from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import React from "react";
+import { AnimatePresence } from "framer-motion";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
-import Center from './components/Center';
-import Header from './components/Header';
-import InvoiceInfo from './components/InvoiceInfo';
-import Login from './components/login';
-import Report from './components/Report';
-import invoiceSlice from './redux/invoiceSlice';
+import Center from "./components/Center";
+import Header from "./components/Header";
+import InvoiceInfo from "./components/InvoiceInfo";
+import Login from "./components/login";
+import Report from "./components/Report";
+import invoiceSlice from "./redux/invoiceSlice";
 
 // Private route component
-const PrivateRoute = ({ children }) => {
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-  return isLoggedIn
-    ? children
-    : <Navigate to="/login" replace />;
-};
+// const PrivateRoute = ({ children }) => {
+//   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+//   return isLoggedIn ? children : <Navigate to="/login" replace />;
+// };
 
 function InvoiceCard({ invoice, onDelete, from }) {
   const navigate = useNavigate();
@@ -45,10 +43,12 @@ function InvoiceCard({ invoice, onDelete, from }) {
       <td className="py-4 px-6 font-medium text-black dark:text-white text-right">
         {formatCurrency(
           invoice.items.reduce(
-            (sum, item) => sum + (item.quantity || 0) * (item.usage || 1) * (item.price || 0),
+            (sum, item) =>
+              sum +
+              (item.quantity || 0) * (item.usage || 1) * (item.price || 0),
             0
           ),
-          invoice.currency || 'USD'
+          invoice.currency || "USD"
         )}
       </td>
       <td className="py-4 px-6 text-center">
@@ -94,13 +94,13 @@ function App() {
     dispatch(invoiceSlice.actions.deleteInvoice({ id }));
   };
 
-  const isLoginPage = location.pathname === '/login';
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const isLoginPage = location.pathname === "/login";
+  // const isLoggedIn = localStorage.getItem("loggedIn") === "true";
 
   // Jika belum login dan bukan di halaman login, langsung redirect
-  if (!isLoggedIn && !isLoginPage) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (!isLoggedIn && !isLoginPage) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
   return (
     <div className="dark:bg-[#141625] duration-300 min-h-screen bg-[#f8f8fb]">
@@ -116,9 +116,9 @@ function App() {
           <Route
             path="/"
             element={
-              <PrivateRoute>
-                <Center />
-              </PrivateRoute>
+              // <PrivateRoute
+              <Center />
+              // </PrivateRoute>
             }
           />
 
@@ -126,9 +126,9 @@ function App() {
           <Route
             path="/invoices"
             element={
-              <PrivateRoute>
-                <Center />
-              </PrivateRoute>
+              // <PrivateRoute>
+              <Center />
+              // </PrivateRoute>
             }
           />
 
@@ -136,9 +136,9 @@ function App() {
           <Route
             path="/payments"
             element={
-              <PrivateRoute>
-                <Center />
-              </PrivateRoute>
+              // <PrivateRoute>
+              <Center />
+              // </PrivateRoute>
             }
           />
 
@@ -146,9 +146,9 @@ function App() {
           <Route
             path="/report"
             element={
-              <PrivateRoute>
-                <Report />
-              </PrivateRoute>
+              // <PrivateRoute>
+              <Report />
+              // </PrivateRoute>
             }
           />
 
@@ -156,9 +156,9 @@ function App() {
           <Route
             path="/invoice"
             element={
-              <PrivateRoute>
-                <InvoiceInfo onDelete={onDelete} />
-              </PrivateRoute>
+              // <PrivateRoute>
+              <InvoiceInfo onDelete={onDelete} />
+              // </PrivateRoute>
             }
           />
         </Routes>

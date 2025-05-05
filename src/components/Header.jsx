@@ -1,15 +1,17 @@
-import React, { useState } from 'react'
-import logo from '../assets/logo_mdi.png';
-import sun from '../assets/icon-sun.svg'
-import moon from '../assets/icon-moon.svg'
-import useDarkMode from '../hooks/useDarkMode';
-import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import logo from "../assets/logo_mdi.png";
+import sun from "../assets/icon-sun.svg";
+import moon from "../assets/icon-moon.svg";
+import useDarkMode from "../hooks/useDarkMode";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import useAuth from "../hooks/useAuth";
 
 function Header() {
   const [colorTheme, setTheme] = useDarkMode();
   const [darkSide, setDarkSide] = useState(false);
+
   const toggleDarkMode = () => {
     const newTheme = colorTheme === "dark" ? "light" : "dark";
     setTheme(newTheme);
@@ -17,16 +19,17 @@ function Header() {
   };
 
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("loggedIn");
+    auth.logout();
     navigate("/login");
   };
 
   const transition = {
     type: "spring",
     stiffness: 200,
-    damping: 10
+    damping: 10,
   };
 
   // Ambil semua invoice dari Redux
@@ -34,10 +37,10 @@ function Header() {
 
   // Hitung total piutang dari invoice yang belum dibayar
   const totalUnpaid = invoices
-    .filter(inv => inv.status === 'pending' || inv.status === 'unpaid')
+    .filter((inv) => inv.status === "pending" || inv.status === "unpaid")
     .reduce((acc, curr) => {
-      const items = curr.item || []; 
-      const totalItem = items.reduce((sum, i) => sum + (i.quantity * i.price), 0);
+      const items = curr.item || [];
+      const totalItem = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
       return acc + totalItem;
     }, 0);
 
@@ -46,11 +49,16 @@ function Header() {
       {/* Logo */}
       <div className="flex items-center">
         <img src={logo} className="h-10 mr-4" alt="logo" />
-        <span className="text-xl font-semibold text-gray-800 dark:text-white hidden sm:inline">InvoiceApp</span>
+        <span className="text-xl font-semibold text-gray-800 dark:text-white hidden sm:inline">
+          InvoiceApp
+        </span>
       </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
+        <span className="text-sm text-gray-500 dark:text-white hidden sm:inline">
+          {auth.user.username} | {auth.user.role}
+        </span>
         {/* Toggle Theme */}
         {colorTheme === "light" ? (
           <motion.img
@@ -59,7 +67,7 @@ function Header() {
             animate={{ scale: 1, rotate: 360, transition }}
             whileTap={{ scale: 0.9, rotate: 15 }}
             src={moon}
-            className='cursor-pointer h-5'
+            className="cursor-pointer h-5"
             alt="dark-mode-icon"
           />
         ) : (
@@ -69,13 +77,13 @@ function Header() {
             initial={{ rotate: 45 }}
             animate={{ rotate: 360, transition }}
             src={sun}
-            className='cursor-pointer h-5'
+            className="cursor-pointer h-5"
             alt="light-mode-icon"
           />
         )}
 
         {/* Profile */}
-        <div className='flex items-center gap-2'> 
+        <div className="flex items-center gap-2">
           <button
             onClick={handleLogout}
             className="text-sm text-red-500 hover:underline"
@@ -85,7 +93,7 @@ function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
 export default Header;
