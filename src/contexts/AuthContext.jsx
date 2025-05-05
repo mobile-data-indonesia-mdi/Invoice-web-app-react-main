@@ -30,13 +30,16 @@ const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
 
-      const userRes = await axios.get(`${API_BASE_URL}/profile`, {
+      const res = await axios.get(`${API_BASE_URL}/profile`, {
         withCredentials: true,
       });
-      setUser(userRes.data.data);
-      console.log("user data", userRes.data.data);
+      console.log(res.data);
+
+      setUser(res.data.data);
       setStatus("authenticated");
+      navigate("/invoices");
     } catch (err) {
+      console.log("test");
       errorHandler(err);
     }
   };
@@ -54,7 +57,8 @@ const AuthProvider = ({ children }) => {
 
   // Fungsi untuk menangani error
   const errorHandler = (err) => {
-    console.error("An error occurred:", err);
+    console.error(err.response.data.data);
+    alert(res.data.message);
     setStatus("unauthenticated");
   };
 

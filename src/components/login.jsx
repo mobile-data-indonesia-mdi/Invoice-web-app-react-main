@@ -16,8 +16,7 @@ function Login() {
     try {
       console.log("mencoba masuk", username, " ", password);
       await login(username, password);
-      console.log("berhasil masuk");
-      navigate("/invoices");
+
     } catch (error) {
       alert("username or password is incorrect!");
     }
