@@ -9,6 +9,7 @@ import InvoiceInfo from "./components/InvoiceInfo";
 import Login from "./components/login";
 import Report from "./components/Report";
 import invoiceSlice from "./redux/invoiceSlice";
+import ClientPage from "./components/ClientPage";
 
 // Private route component
 // const PrivateRoute = ({ children }) => {
@@ -158,6 +159,14 @@ function App() {
             element={
               // <PrivateRoute>
               <InvoiceInfo onDelete={onDelete} />
+              // </PrivateRoute>
+            }
+          />
+          <Route
+            path="/clients"
+            element={
+              // <PrivateRoute>
+              <ClientPage />
               // </PrivateRoute>
             }
           />

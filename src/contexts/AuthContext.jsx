@@ -64,40 +64,39 @@ const AuthProvider = ({ children }) => {
 
   // Mengecek status autentikasi pada saat komponen pertama kali dirender
   useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/profile`, { withCredentials: true })
-      .then((res) => {
-        setUser(res.data.data);
-        setStatus("authenticated");
-      })
-      .catch((err) => {
-        if (err.response?.status === 401) {
-          // Coba untuk me-refresh token
-          axios
-            .get(`${API_BASE_URL}/refresh`, { withCredentials: true })
-            .then(() => {
-              axios
-                .get(`${API_BASE_URL}/profile`, { withCredentials: true })
-                .then((res) => {
-                  setUser(res.data.data);
-                  setStatus("authenticated");
-                })
-                .catch(() => logout());
-            })
-            .catch(() => logout());
-          return;
-        }
-        logout();
-      });
-  }, []);
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/profile`, {
+          withCredentials: true,
+        });
 
-  useEffect(() => {
-    // if user not logged in, set status to unauthenticated and redirect to /login
-    if (status === "unauthenticated") {
-      setUser({ username: "unauthorize", role: "staff" });
-      setStatus("unauthenticated");
-      navigate("/login");
-    }
+        setUser(res.data.data);
+
+        setStatus("authenticated");
+      } catch (err) {
+        if (err.response?.status === 401) {
+          try {
+            await axios.post(`${API_BASE_URL}/refresh`, {
+              withCredentials: true,
+            });
+
+            const resProf = await axios.get(`${API_BASE_URL}/profile`, {
+              withCredentials: true,
+            });
+            setUser(resProf.data.data);
+            setStatus("authenticated");
+          } catch {
+            logout();
+            navigate("/login");
+          }
+        } else {
+          logout();
+          navigate("/login");
+        }
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   return (

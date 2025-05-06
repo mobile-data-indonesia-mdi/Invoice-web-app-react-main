@@ -61,6 +61,8 @@ function Center() {
       setSelectedMenu("payments");
     } else if (location.pathname === "/report") {
       setSelectedMenu("report");
+    } else if (location.pathname === "/clients") {
+      setSelectedMenu("clients");
     }
   }, [location.pathname]);
 
@@ -110,7 +112,7 @@ function Center() {
     content = (
       <div className="mt-10 rounded-lg shadow-md">
         <div className="overflow-x-auto">
-          <table className="table-fixed w-full bg-white dark:bg-[#1E2139] rounded-lg">
+          <table className="table-auto w-full bg-white dark:bg-[#1E2139] rounded-lg">
             <thead className="bg-gray-100 dark:bg-[#252945] text-sm text-gray-600 dark:text-gray-300">
               <tr>
                 <th className="py-4">Invoice ID</th>
