@@ -1,11 +1,11 @@
 import Sidebar from "./Sidebar";
 import { useState } from "react";
-import { useApi } from "../hooks/useApi"; // sesuaikan path
+import { useApi } from "../hooks/useApi"; 
 
 export default function ClientPage() {
   const [selectedMenu, setSelectedMenu] = useState("Client");
   const [showModal, setShowModal] = useState(false);
-  const [trigger, setTrigger] = useState(0); // digunakan untuk refresh data
+  const [trigger, setTrigger] = useState(0); 
   const [formData, setFormData] = useState({
     client_name: "",
     currency: "",
@@ -50,7 +50,7 @@ export default function ClientPage() {
         client_phone: "",
       });
       setShowModal(false);
-      setTrigger((prev) => prev + 1); // trigger refresh
+      setTrigger((prev) => prev + 1); 
     } catch (err) {
       console.error("Error submitting client data:", err);
     }

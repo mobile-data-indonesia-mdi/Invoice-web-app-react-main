@@ -76,7 +76,7 @@ const AuthProvider = ({ children }) => {
       } catch (err) {
         if (err.response?.status === 401) {
           try {
-            await axios.post(`${API_BASE_URL}/refresh`, {
+            await axios.post(`${API_BASE_URL}/refresh-token`, {
               withCredentials: true,
             });
 
