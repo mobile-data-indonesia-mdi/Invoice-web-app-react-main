@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';   // Import useDispatch
-import { toggleVoidExistingInvoice } from '../redux/invoiceSlice';  // Import invoiceSlice
+
 import PaidStatus from './PaidStatus';
-import { formatCurrency } from '../functions/formatCurrency';
-import { FiEye, FiDownload, FiTrash2 } from 'react-icons/fi';
 import VoidModal from './VoidModal';
 import DeleteModal from './DeleteModal'; // Import DeleteModal
+
+import { toggleVoidExistingInvoice } from '../redux/invoiceSlice';  // Import invoiceSlice
+import { formatCurrency } from '../functions/formatCurrency';
+import { FiEye, FiDownload, FiTrash2 } from 'react-icons/fi';
+import useAuth from '../hooks/useAuth';
 
 function InvoiceCard({ invoice, onDelete, from }) {
   const dispatch = useDispatch();    // Inisialisasi dispatch
   const navigate = useNavigate();
+  const auth = useAuth();
+
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
   const [voidStatus, setVoidStatus] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State untuk modal delete
@@ -86,31 +91,35 @@ function InvoiceCard({ invoice, onDelete, from }) {
             <FiDownload size={16} />
           </button>
 
-          <button
-            onClick={() => handleDelete(invoice.invoice_id)} // Memanggil handleDelete untuk modal delete
-            className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-            title="Delete"
-          >
-            <FiTrash2 size={16} />
-          </button>
+          {auth.user.role === 'finance' && (
+            <button
+              onClick={() => handleDelete(invoice.invoice_id)} // Memanggil handleDelete untuk modal delete
+              className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
+              title="Delete"
+            >
+              <FiTrash2 size={16} />
+            </button>
+          )}
         </div>
       </td>
 
-      <td className="py-5 px-6 text-center">
-      <button
-        onClick={() => {
-            setVoidStatus(invoice.voided_at != null ? 'unvoid' : 'void');
-            setIsVoidModalOpen(true);
-        }}
-        className={`px-4 py-1 text-sm rounded-full shadow-md text-white transition-all duration-150 ${
-            invoice.voided_at != null
-            ? 'bg-gray-500 hover:bg-gray-600'
-            : 'bg-red-500 hover:bg-red-600'
-        }`}
-        >
-        {invoice.voided_at != null ? 'Unvoid' : 'Void'}
-        </button>
-      </td>
+      {auth.user.role === 'finance' && (
+        <td className="py-5 px-6 text-center">
+          <button
+            onClick={() => {
+              setVoidStatus(invoice.voided_at != null ? 'unvoid' : 'void');
+              setIsVoidModalOpen(true);
+            }}
+            className={`px-4 py-1 text-sm rounded-full shadow-md text-white transition-all duration-150 ${
+              invoice.voided_at != null
+                ? 'bg-gray-500 hover:bg-gray-600'
+                : 'bg-red-500 hover:bg-red-600'
+            }`}
+          >
+            {invoice.voided_at != null ? 'Unvoid' : 'Void'}
+          </button>
+        </td>
+      )}
 
       {isVoidModalOpen && (
         <VoidModal

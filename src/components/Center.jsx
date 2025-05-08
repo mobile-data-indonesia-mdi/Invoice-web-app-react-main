@@ -1,21 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { AnimatePresence, motion, useAnimation } from "framer-motion";
-import arrowDown from "../assets/icon-arrow-down.svg";
-import plus from "../assets/plus.png";
-import InvoiceCard from "./InvoiceCard";
-import { useDispatch, useSelector } from "react-redux";
-import invoiceSlice, { fetchInvoices } from "../redux/invoiceSlice";
-import CreateInvoice from "./CreateInvoice";
 import { useLocation } from "react-router-dom";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+
 import Sidebar from "./Sidebar";
+import CreateInvoice from "./CreateInvoice";
+import InvoiceCard from "./InvoiceCard";
 import CreatePayment from "./CreatePayment"; // Import komponen CreatePayment
 import PaymentCard from "./PaymentCard"; // Import PaymentCard
+import arrowDown from "../assets/icon-arrow-down.svg";
+import plus from "../assets/plus.png";
+
+import invoiceSlice, { fetchInvoices } from "../redux/invoiceSlice";
+import useAuth from "../hooks/useAuth";
 
 function Center() {
   const location = useLocation();
   const controls = useAnimation();
   const dispatch = useDispatch();
   const filter = ["paid", "unpaid", "partial"];
+  const auth = useAuth();
 
   // State Hooks
   const [isDropdown, setIsDropdown] = useState(false);
@@ -117,13 +121,13 @@ function Center() {
           <table className="table-auto w-full bg-white dark:bg-[#1E2139] rounded-lg">
             <thead className="bg-gray-100 dark:bg-[#252945] text-sm text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="py-4">Invoice ID</th>
-                <th className="py-4">Due Date</th>
-                <th className="py-4">Client</th>
-                <th className="py-4 text-right">Total</th>
-                <th className="py-4 text-center">Status</th>
-                <th className="py-4 text-center">Action</th>
-                <th className="py-4 text-center">Void</th>
+                <th className="py-4 px-4">Invoice ID</th>
+                <th className="py-4 px-4">Due Date</th>
+                <th className="py-4 px-4">Client</th>
+                <th className="py-4 px-4 text-right">Total</th>
+                <th className="py-4 px-4 text-center">Status</th>
+                <th className="py-4 px-4 text-center">Action</th>
+                {auth.user.role === 'finance' && (<th className="py-4 px-4 text-center">Void</th>)}
               </tr>
             </thead>
             <tbody>

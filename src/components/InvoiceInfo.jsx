@@ -1,23 +1,27 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import leftArrow from '../assets/icon-arrow-left.svg'
-import { AnimatePresence, motion } from 'framer-motion'
-import PaidStatus from './PaidStatus'
-import { useDispatch, useSelector } from 'react-redux'
-import {editExistingInvoice, fetchInvoiceById, toggleVoidExistingInvoice} from '../redux/invoiceSlice'
-import formatDate from '../functions/formatDate'
-import DeleteModal from './DeleteModal'
-import CreateInvoice from './CreateInvoice'
-import { formatCurrency, formatNumber } from '../functions/formatCurrency'; // Tambahkan formatNumber
-import logoMDI from "../assets/logo_mdi.png"
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-import VoidModal from './VoidModal' // Tambahkan impor VoidModal
+import React, { useEffect, useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { AnimatePresence, motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+import leftArrow from '../assets/icon-arrow-left.svg';
+import logoMDI from '../assets/logo_mdi.png';
+import PaidStatus from './PaidStatus';
+import DeleteModal from './DeleteModal';
+import CreateInvoice from './CreateInvoice';
+import VoidModal from './VoidModal';
+
+import { editExistingInvoice, fetchInvoiceById, toggleVoidExistingInvoice } from '../redux/invoiceSlice';
+import formatDate from '../functions/formatDate';
+import { formatCurrency, formatNumber } from '../functions/formatCurrency';
+import useAuth from "../hooks/useAuth.js";
 
 function InvoiceInfo({ onDelete }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const auth = useAuth();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -142,45 +146,45 @@ function InvoiceInfo({ onDelete }) {
               <PaidStatus type={invoice.voided_at != null ? 'void' : invoice.payment_status} />
             </div>
 
-            {/* Actions Section */}
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setIsEditOpen(true)}
-                className="text-[#7e88c3] bg-slate-100 dark:bg-[#252945] hover:opacity-80 py-2 px-5 rounded-full"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="text-white bg-red-900 hover:opacity-80 py-2 px-5 rounded-full"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => {
-                  // Tentukan status berdasarkan kondisi saat ini (tidak tergantung pada status saat itu)
-                  setVoidStatus(invoice.voided_at != null ? null : invoice.payment_status);
-                  setIsVoidModalOpen(true);
-                }}
-                className={`text-white ${
-                  invoice.voided_at != null ? ' bg-gray-500' : 'bg-red-500'
-                } hover:opacity-80 py-2 px-5 rounded-full`}
-              >
-                {invoice.voided_at != null ? 'Unvoid' : 'Void'}
-              </button>
-              
-              {invoice.payment_status !== 'paid' && (
+            {/* Actions Section for finance role */}
+            {auth.user.role === 'finance' && (
+              <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={onMakePaidClick}
-                  className="text-white bg-green-500 hover:opacity-80 py-2 px-5 rounded-full"
+                  onClick={() => setIsEditOpen(true)}
+                  className="text-[#7e88c3] bg-slate-100 dark:bg-[#252945] hover:opacity-80 py-2 px-5 rounded-full"
                 >
-                  Mark as Paid
+                  Edit
                 </button>
-              )}
-              
-            </div>
-          </div>
+                <button
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="text-white bg-red-900 hover:opacity-80 py-2 px-5 rounded-full"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => {
+                    // Tentukan status berdasarkan kondisi saat ini (tidak tergantung pada status saat itu)
+                    setVoidStatus(invoice.voided_at != null ? null : invoice.payment_status);
+                    setIsVoidModalOpen(true);
+                  }}
+                  className={`text-white ${
+                    invoice.voided_at != null ? ' bg-gray-500' : 'bg-red-500'
+                  } hover:opacity-80 py-2 px-5 rounded-full`}
+                >
+                  {invoice.voided_at != null ? 'Unvoid' : 'Void'}
+                </button>
 
+                {invoice.payment_status !== 'paid' && (
+                  <button
+                    onClick={onMakePaidClick}
+                    className="text-white bg-green-500 hover:opacity-80 py-2 px-5 rounded-full"
+                  >
+                    Mark as Paid
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* INVOICE BODY */}
           <div
