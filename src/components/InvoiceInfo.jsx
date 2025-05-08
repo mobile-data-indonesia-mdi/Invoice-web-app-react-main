@@ -4,7 +4,7 @@ import leftArrow from '../assets/icon-arrow-left.svg'
 import { AnimatePresence, motion } from 'framer-motion'
 import PaidStatus from './PaidStatus'
 import { useDispatch, useSelector } from 'react-redux'
-import invoiceSlice from '../redux/invoiceSlice'
+import {editExistingInvoice, fetchInvoiceById, toggleVoidExistingInvoice} from '../redux/invoiceSlice'
 import formatDate from '../functions/formatDate'
 import DeleteModal from './DeleteModal'
 import CreateInvoice from './CreateInvoice'
@@ -12,43 +12,45 @@ import { formatCurrency, formatNumber } from '../functions/formatCurrency'; // T
 import logoMDI from "../assets/logo_mdi.png"
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
-import VoidModal from './VoidModal'; // Tambahkan impor VoidModal
+import VoidModal from './VoidModal' // Tambahkan impor VoidModal
 
 function InvoiceInfo({ onDelete }) {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const dispatch = useDispatch()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false); // Tambahkan state untuk VoidModal
   const [voidStatus, setVoidStatus] = useState(''); // Status void/unvoid
+  const [isDownloading, setIsDownloading] = useState(false); // State untuk menandakan apakah sedang mendownload
 
-  const params = new URLSearchParams(location.search)
-  const invoiceId = params.get('id')
+  const params = new URLSearchParams(location.search);
+  const invoiceId = params.get('id');
   const isDownload = params.get('download') === 'true';
 
   const from = location.state?.from || 'dashboard'; // Default ke 'dashboard'
 
   // ref khusus untuk body invoice yang ingin di-download
-  const bodyRef = useRef(null)
+  const bodyRef = useRef(null);
 
-  const onMakePaidClick = () => {
+  const onMakePaidClick = async () => {
     if (invoiceId) {
-      dispatch(invoiceSlice.actions.updateInvoiceStatus({ id: invoiceId, status: 'paid' }))
-      dispatch(invoiceSlice.actions.getInvoiceById({ id: invoiceId }))
+      await dispatch(editExistingInvoice({invoice_id: invoiceId, payment_status: 'paid'}))
+      await dispatch(fetchInvoiceById(invoiceId))
     }
-  }
+  };
 
   useEffect(() => {
     if (invoiceId) {
-      dispatch(invoiceSlice.actions.getInvoiceById({ id: invoiceId }))
+      dispatch(fetchInvoiceById(invoiceId));
     }
   }, [invoiceId, dispatch])
 
   useEffect(() => {
     if (!isEditOpen) {
-      dispatch(invoiceSlice.actions.getInvoiceById({ id: invoiceId })); // Refresh data setelah edit
+      dispatch(fetchInvoiceById(invoiceId)); // Refresh data setelah edit
+      console.log("Invoice ID setelah edit: ", invoice);
     }
   }, [isEditOpen, invoiceId, dispatch]);
 
@@ -62,13 +64,16 @@ function InvoiceInfo({ onDelete }) {
     navigate('/')
     setIsDeleteModalOpen(false)
     onDelete(invoiceId)
-  }
+  };
 
-  const invoice = useSelector((state) => state.invoices.invoiceById)
+  const invoice = useSelector((state) => state.invoices.invoiceById);
 
   // fungsi untuk download PDF hanya area bodyRef
   const downloadPdf = async () => {
     if (!bodyRef.current) return
+
+    setIsDownloading(true);
+
     const canvas = await html2canvas(bodyRef.current, { scale: 2 })
     const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF('p', 'pt', 'a4')
@@ -76,24 +81,23 @@ function InvoiceInfo({ onDelete }) {
     const imgProps = pdf.getImageProperties(imgData)
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-    pdf.save(`invoice_${invoice.id}.pdf`)
+    pdf.save(`invoice_${invoice.invoice_number}.pdf`)
+
+    setIsDownloading(false);
   }
 
   const handleGoBack = () => {
     navigate(`/${from}`);
   };
 
-  const onVoidButtonClick = () => {
+  const onVoidButtonClick = async () => {
     if (invoiceId) {
-      // Mengubah status berdasarkan status saat ini
-      const newStatus = invoice.status === 'void' ? 'pending' : 'void';
       // Update status invoice dengan status yang baru
-      dispatch(invoiceSlice.actions.updateInvoiceStatus({ id: invoiceId, status: newStatus }));
-      dispatch(invoiceSlice.actions.getInvoiceById({ id: invoiceId }));
+      await dispatch(toggleVoidExistingInvoice(invoiceId));
+      await dispatch(fetchInvoiceById(invoiceId));
       setIsVoidModalOpen(false); // Menutup modal setelah status diubah
     }
   }
-  
 
   return (
     <div>
@@ -106,7 +110,7 @@ function InvoiceInfo({ onDelete }) {
       </button>
       {invoice ? (
         <motion.div
-          key='invoice-info'
+          key='invoice?.invoice_number'
           initial={{ x: 0 }}
           animate={{ x: 0 }}
           exit={{ x: '200%' }}
@@ -126,7 +130,7 @@ function InvoiceInfo({ onDelete }) {
               onClick={downloadPdf}
               className='text-white bg-[#7c5dfa] hover:opacity-80 p-2 px-4 rounded-full text-sm'
             >
-              Download PDF
+              {isDownloading ? 'Downloading...' : 'Download PDF'}
             </button>
           </div>
 
@@ -135,7 +139,7 @@ function InvoiceInfo({ onDelete }) {
             {/* Status Section */}
             <div className="flex items-center gap-3">
               <p className="text-gray-500 dark:text-gray-400 font-medium">Status:</p>
-              <PaidStatus type={invoice.status} />
+              <PaidStatus type={invoice.voided_at != null ? 'void' : invoice.payment_status} />
             </div>
 
             {/* Actions Section */}
@@ -148,28 +152,27 @@ function InvoiceInfo({ onDelete }) {
               </button>
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="text-white bg-red-500 hover:opacity-80 py-2 px-5 rounded-full"
+                className="text-white bg-red-900 hover:opacity-80 py-2 px-5 rounded-full"
               >
                 Delete
               </button>
               <button
                 onClick={() => {
                   // Tentukan status berdasarkan kondisi saat ini (tidak tergantung pada status saat itu)
-                  setVoidStatus(invoice.status === 'void' ? 'pending' : 'void'); 
+                  setVoidStatus(invoice.voided_at != null ? null : invoice.payment_status);
                   setIsVoidModalOpen(true);
                 }}
-                className={`text-black ${
-                  invoice.status === 'void' ? 'bg-gray-500' : 'bg-white'
+                className={`text-white ${
+                  invoice.voided_at != null ? ' bg-gray-500' : 'bg-red-500'
                 } hover:opacity-80 py-2 px-5 rounded-full`}
               >
-                {invoice.status === 'void' ? 'Unvoid' : 'Void'}
+                {invoice.voided_at != null ? 'Unvoid' : 'Void'}
               </button>
-
               
-              {invoice.status === 'pending' && (
+              {invoice.payment_status !== 'paid' && (
                 <button
                   onClick={onMakePaidClick}
-                  className="text-white bg-[#2dee4d] hover:opacity-80 py-2 px-5 rounded-full"
+                  className="text-white bg-green-500 hover:opacity-80 py-2 px-5 rounded-full"
                 >
                   Mark as Paid
                 </button>
@@ -201,15 +204,15 @@ function InvoiceInfo({ onDelete }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b pb-4 mb-6">
               <div>
                 <p className="text-xs uppercase font-bold mb-2">To</p>
-                <p className="font-semibold">{invoice.clientName}</p>
-                <p>{invoice.clientAddress.street}</p>
-                <p>{invoice.clientAddress.city}, {invoice.clientAddress.postCode}</p>
-                <p>{invoice.clientAddress.country}</p>
+                <p className="font-semibold">{invoice.client.client_name}</p>
+                <p>{invoice.client.client_address}</p>
+                <p>{invoice.client.postal_code}</p>
+                <p>{invoice.client.country}</p>
               </div>
               <div className="text-sm text-right">
-                <p><span className="font-bold">Invoice No.:</span> {invoice.id}</p>
-                <p><span className="font-bold">Invoice Date:</span> {formatDate(invoice.createdAt)}</p>
-                <p><span className="font-bold">Due Date:</span> {formatDate(invoice.paymentDue)}</p>
+                <p><span className="font-bold">Invoice No.:</span> {invoice.invoice_number}</p>
+                <p><span className="font-bold">Invoice Date:</span> {formatDate(invoice.issue_date)}</p>
+                <p><span className="font-bold">Due Date:</span> {formatDate(invoice.due_date)}</p>
               </div>
             </div>
 
@@ -222,19 +225,18 @@ function InvoiceInfo({ onDelete }) {
                 <p className="col-span-1 text-right">Price</p>
                 <p className="col-span-1 text-right">Amount</p>
               </div>
-              {invoice.items.map((item, idx) => (
+              {invoice.invoice_details.map((item, idx) => (
                 <div key={idx} className="grid grid-cols-6 p-2 border-t text-sm">
-                  <p className="col-span-1">{formatNumber(item.quantity || 0)}</p> {/* Quantity */}
+                  <p className="col-span-1">{formatNumber(idx+1)}</p> {/* Quantity */}
                   <div className="col-span-2">
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-gray-500 text-xs">{item.description || '-'}</p>
+                    <p className="font-medium">{item.transaction_note}</p>
                   </div>
-                  <p className="col-span-1 text-right">{formatNumber(item.usage || 0)}</p> {/* Usage */}
-                  <p className="col-span-1 text-right">{formatCurrency(item.price || 0, invoice.currency || 'USD')}</p> {/* Price */}
+                  <p className="col-span-1 text-right">{formatNumber(item.delivery_count || 0)}</p> {/* Usage */}
+                  <p className="col-span-1 text-right">{formatCurrency(item.price_per_delivery || 0, invoice.client.currency || 'USD')}</p> {/* Price */}
                   <p className="col-span-1 text-right">
                     {formatCurrency(
-                      (item.usage || 0) * (item.price || 0), // Amount = Usage * Price
-                      invoice.currency || 'USD'
+                      (item.delivery_count || 0) * (item.price_per_delivery || 0), // Amount = Usage * Price
+                      invoice.client.currency || 'USD'
                     )}
                   </p>
                 </div>
@@ -245,21 +247,23 @@ function InvoiceInfo({ onDelete }) {
             <div className="text-right mt-6 space-y-2 text-sm">
               <p>
                 <span className="font-bold">Subtotal:</span> {formatCurrency(
-                  invoice.items.reduce(
-                    (sum, item) => sum + (item.usage || 0) * (item.price || 0), // Total hanya menggunakan usage dan price
+                  invoice.invoice_details.reduce(
+                    (sum, item) => sum + (item.delivery_count || 0) * (item.price_per_delivery || 0), // Total hanya menggunakan usage dan price
                     0
                   ),
-                  invoice.currency || 'USD'
+                  invoice.client.currency || 'USD'
                 )}
               </p>
-              <p><span className="font-bold">Tax :</span> -</p>
+              <p>
+                <span className="font-bold">Tax :</span> {formatCurrency(
+                  invoice.tax_amount || 0,
+                  invoice.client.currency || 'USD'
+                )}
+              </p>
               <p className="text-lg font-bold">
                 <span>Total:</span> {formatCurrency(
-                  invoice.items.reduce(
-                    (sum, item) => sum + (item.usage || 0) * (item.price || 0), // Total hanya menggunakan usage dan price
-                    0
-                  ),
-                  invoice.currency || 'USD'
+                  invoice.total,
+                  invoice.client.currency || 'USD'
                 )}
               </p>
             </div>
@@ -282,7 +286,9 @@ function InvoiceInfo({ onDelete }) {
           </div>
         </motion.div>
       ) : (
-        <p className='text-center mt-20 dark:text-white'>Loading...</p>
+        <div className='flex justify-center items-center min-h-screen'>
+          <p className='text-gray-500 dark:text-white'>Loading...</p>
+        </div>
       )}
 
       {isDeleteModalOpen && (
