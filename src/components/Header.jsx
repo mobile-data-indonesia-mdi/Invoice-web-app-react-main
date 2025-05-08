@@ -37,10 +37,10 @@ function Header() {
 
   // Hitung total piutang dari invoice yang belum dibayar
   const totalUnpaid = invoices
-    .filter((inv) => inv.status === "pending" || inv.status === "unpaid")
+    .filter((inv) => inv.payment_status === "partial" || inv.payment_status === "unpaid")
     .reduce((acc, curr) => {
       const items = curr.item || [];
-      const totalItem = items.reduce((sum, i) => sum + i.quantity * i.price, 0);
+      const totalItem = items.reduce((sum, i) => sum + i.delivery_count * i.price_per_delivery, 0);
       return acc + totalItem;
     }, 0);
 
