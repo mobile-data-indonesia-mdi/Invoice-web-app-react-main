@@ -80,6 +80,10 @@ export function validateItemName(itemName) {
 }
 
 export function validateItemPrice(itemPrice) {
+  if(typeof itemCount === "string") {
+    itemCount = parseInt(itemPrice);
+  }
+
   if (itemPrice <= 0 || isNaN(itemPrice)) {
     return "Price must be a positive number";
   }
@@ -87,6 +91,10 @@ export function validateItemPrice(itemPrice) {
 }
 
 export function validateItemCount(itemCount) {
+  if(typeof itemCount === "string") {
+    itemCount = parseInt(itemCount);
+  }
+
   if (itemCount <= 0 || isNaN(itemCount)) {
     return "Item count must be a positive number";
   }
