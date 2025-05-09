@@ -8,9 +8,9 @@ import jsPDF from 'jspdf';
 import leftArrow from '../assets/icon-arrow-left.svg';
 import logoMDI from '../assets/logo_mdi.png';
 import PaidStatus from './PaidStatus';
-import DeleteModal from './DeleteModal';
-import CreateInvoice from './CreateInvoice';
-import VoidModal from './VoidModal';
+import DeleteModal from './modal/DeleteModal.jsx';
+import CreateInvoice from './invoice/CreateInvoice.jsx';
+import VoidModal from './modal/VoidModal.jsx';
 
 import { editExistingInvoice, fetchInvoiceById, toggleVoidExistingInvoice } from '../redux/invoiceSlice';
 import formatDate from '../functions/formatDate';
