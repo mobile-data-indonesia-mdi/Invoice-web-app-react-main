@@ -145,7 +145,6 @@ function CreateInvoice({ openCreateInvoice, setOpenCreateInvoice, invoice, type 
         transaction_note: i.name,
         delivery_count: parseInt(i.usage),
         price_per_delivery: parseFloat(i.price),
-        //total: parseFloat((i.usage || 0) * (i.price || 0)).toFixed(2), // Total hanya menggunakan usage dan price
       })),
     };
 
@@ -153,15 +152,10 @@ function CreateInvoice({ openCreateInvoice, setOpenCreateInvoice, invoice, type 
       payload.tax_amount = taxAmount;
       payload.sub_total = subtotal;
       payload.total = taxAmount + subtotal;
-
-      console.log("taxAmount: ", taxAmount);
-      console.log("tax_amount: ", payload.tax_amount);
       await dispatch(editExistingInvoice({ id: invoice.invoice_id, invoiceData: payload }));
     } else {
       await dispatch(createNewInvoice(payload));
     }
-
-    console.log("Payload", payload);
 
     // Perbarui filter untuk memastikan invoice baru muncul
     await dispatch(invoiceSlice.actions.filterInvoice({ status: '' }));

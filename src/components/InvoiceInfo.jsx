@@ -54,7 +54,6 @@ function InvoiceInfo({ onDelete }) {
   useEffect(() => {
     if (!isEditOpen) {
       dispatch(fetchInvoiceById(invoiceId)); // Refresh data setelah edit
-      console.log("Invoice ID setelah edit: ", invoice);
     }
   }, [isEditOpen, invoiceId, dispatch]);
 

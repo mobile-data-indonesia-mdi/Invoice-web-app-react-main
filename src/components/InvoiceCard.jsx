@@ -34,7 +34,6 @@ function InvoiceCard({ invoice, onDelete, from }) {
   // Fungsi untuk handle aksi Void/Unvoid
   const onVoidButtonClick = () => {
     // Dispatch action untuk update status invoice
-    console.log("Invoice ID di card: ", invoice.invoice_id);
     dispatch(toggleVoidExistingInvoice(invoice.invoice_id));
     setIsVoidModalOpen(false); // Tutup modal setelah aksi
   };

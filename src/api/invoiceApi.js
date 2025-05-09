@@ -45,7 +45,6 @@ export const editInvoice = async (id, invoiceData) => {
 
 export const toggleVoidInvoice = async (id) => {
   try {
-    console.log("Toggling void status for invoice ID:", id);
     const response = await axios.patch(`${API_BASE_URL}/${id}/void-status`, null, { withCredentials: true });
     return response.data;
   } catch (error) {
