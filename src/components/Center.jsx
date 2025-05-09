@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import Sidebar from "./Sidebar";
 import CreateInvoice from "./CreateInvoice";
 import InvoiceCard from "./InvoiceCard";
+import CreateInvoice from "./invoice/CreateInvoice.jsx";
+import InvoiceCard from "./invoice/InvoiceCard.jsx";
 import CreatePayment from "./CreatePayment"; // Import komponen CreatePayment
 import PaymentCard from "./PaymentCard"; // Import PaymentCard
 import arrowDown from "../assets/icon-arrow-down.svg";

@@ -10,6 +10,7 @@ import Login from "./components/login";
 import Report from "./components/Report";
 import invoiceSlice from "./redux/invoiceSlice";
 import ClientPage from "./components/ClientPage";
+import InvoicePage from "./pages/InvoicePage";
 
 // Private route component
 // const PrivateRoute = ({ children }) => {
@@ -58,7 +59,7 @@ function App() {
             path="/invoices"
             element={
               // <PrivateRoute>
-              <Center />
+              <InvoicePage />
               // </PrivateRoute>
             }
           />

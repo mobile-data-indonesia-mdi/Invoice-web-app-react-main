@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';   // Import useDispatch
 
-import PaidStatus from './PaidStatus';
-import VoidModal from './VoidModal';
-import DeleteModal from './DeleteModal'; // Import DeleteModal
+import PaidStatus from '../PaidStatus.jsx';
+import VoidModal from '../modal/VoidModal.jsx';
+import DeleteModal from '../modal/DeleteModal.jsx'; // Import DeleteModal
 
-import { toggleVoidExistingInvoice } from '../redux/invoiceSlice';  // Import invoiceSlice
-import { formatCurrency } from '../functions/formatCurrency';
+import { toggleVoidExistingInvoice } from '../../redux/invoiceSlice.js';  // Import invoiceSlice
+import { formatCurrency } from '../../functions/formatCurrency.js';
 import { FiEye, FiDownload, FiTrash2 } from 'react-icons/fi';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../../hooks/useAuth.js';
 
 function InvoiceCard({ invoice, onDelete, from }) {
   const dispatch = useDispatch();    // Inisialisasi dispatch
@@ -64,7 +64,7 @@ function InvoiceCard({ invoice, onDelete, from }) {
       <td className="w-1/6 py-4 px-4 font-medium text-black dark:text-white text-right">
         {formatCurrency(
           invoice.total,
-          invoice.client.currency || 'USD'
+          invoice.client?.currency || 'USD'
         )}
       </td>
 

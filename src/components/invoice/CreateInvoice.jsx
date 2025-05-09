@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
-import invoiceSlice, { createNewInvoice, editExistingInvoice} from '../redux/invoiceSlice';
-import { formatCurrency } from '../functions/formatCurrency';
+import invoiceSlice, { createNewInvoice, editExistingInvoice} from '../../redux/invoiceSlice.js';
+import { formatCurrency } from '../../functions/formatCurrency.js';
 import {
   validateClientName,
   validateClientPostCode,
@@ -12,7 +12,7 @@ import {
   validateItemName,
   validateItemPrice,
   validateClientCountry,
-} from '../functions/createInvoiceValidator';
+} from '../../functions/createInvoiceValidator.js';
 import moment from 'moment';
 
 function CreateInvoice({ openCreateInvoice, setOpenCreateInvoice, invoice, type }) {
