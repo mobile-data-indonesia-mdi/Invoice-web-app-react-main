@@ -62,7 +62,10 @@ export const editExistingPayment = createAsyncThunk( 'payments/updatePayment', a
 // });
 
 const initialState = {
-  payments: [], // daftar semua transaksi pembayaran
+  allPayments: [], // daftar semua transaksi pembayaran
+  paymentById: null, // transaksi pembayaran berdasarkan ID
+  loading: false,
+  error: null,
 };
 
 const paymentSlice = createSlice({

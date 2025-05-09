@@ -80,8 +80,13 @@ const invoiceSlice = createSlice({
       if (action.payload.status === "") {
         state.filteredInvoice = allInvoice;
       } else {
+        console.log("Filtering invoices by status:", action.payload.status);
         const filteredData = allInvoice.filter((invoice) => {
-          return invoice.payment_status === action.payload.status;
+          if (action.payload.status === "void") {
+            return invoice.voided_at !== null;
+          } else {
+            return invoice.payment_status === action.payload.status && invoice.voided_at === null;
+          }
         });
         state.filteredInvoice = filteredData;
       }
