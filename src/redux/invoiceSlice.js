@@ -167,6 +167,7 @@ const invoiceSlice = createSlice({
         console.log("Editing an existing invoice is pending...");
       })
       .addCase(editExistingInvoice.fulfilled, (state, action) => {
+        state.loading = false;
         const id = action.meta.arg; // Get the ID from the meta argument
         const index = state.allInvoice.findIndex((invoice) => invoice.invoice_id === id);
         if (index !== -1) {
