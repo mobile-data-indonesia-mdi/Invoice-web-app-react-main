@@ -69,6 +69,8 @@ function Center() {
       setSelectedMenu("payments");
     } else if (location.pathname === "/report") {
       setSelectedMenu("report");
+    } else if (location.pathname === "/clients") {
+      setSelectedMenu("clients");
     }
   }, [location.pathname]);
 
