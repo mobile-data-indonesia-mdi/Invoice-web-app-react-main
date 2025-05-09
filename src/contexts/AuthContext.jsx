@@ -49,7 +49,7 @@ const AuthProvider = ({ children }) => {
     axios
       .delete(`${API_BASE_URL}/logout`, { withCredentials: true })
       .then(() => {
-        setUser(null);
+        setUser({ username: "unauthorize", role: "staff" });
         setStatus("unauthenticated");
       })
       .catch((err) => errorHandler(err));

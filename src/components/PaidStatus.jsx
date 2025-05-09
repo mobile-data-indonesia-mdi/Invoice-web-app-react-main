@@ -1,12 +1,13 @@
 import React from 'react'
 
 function PaidStatus({type}) {
-    const classNames = {
-        paid :  ['text-[#33d69f] bg-[#33d69f0f]' , 'bg-[#33d69f]' ],
-        unpaid : ['text-[#ff8f00] bg-[#ff8f000f]' , 'bg-[#ff8f00]'],
-        partial : ['text-[#dfe3fa] bg-[#dfe3fa0f]' , 'bg-[#dfe3fa]'],
-        void: ['text-[#F1EFEC] bg-[#f3f4f6] dark:bg-[#d4c9be0f]', 'bg-[#d4c9be]']
-    }
+  const classNames = {
+    paid :  ['text-[#33d69f] bg-[#33d69f0f]' , 'bg-[#33d69f]' ],
+    unpaid : ['text-[#ff8f00] bg-[#ff8f000f]' , 'bg-[#ff8f00]'],
+    partial : ['text-[#dfe3fa] bg-[#dfe3fa0f]' , 'bg-[#dfe3fa]'],
+    void: ['text-[#F1EFEC] bg-[#f3f4f6] dark:bg-[#d4c9be0f]', 'bg-[#d4c9be]']
+  }
+
   return (
     <div className={
       `${type === 'paid' ? classNames.paid[0] : 
