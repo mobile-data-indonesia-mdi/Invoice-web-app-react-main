@@ -10,12 +10,7 @@ import Login from "./components/login";
 import Report from "./components/Report";
 import invoiceSlice from "./redux/invoiceSlice";
 import ClientPage from "./components/ClientPage";
-
-// Private route component
-// const PrivateRoute = ({ children }) => {
-//   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-//   return isLoggedIn ? children : <Navigate to="/login" replace />;
-// };
+import ProtectedLayout from "./components/protectedLayout";
 
 function App() {
   const location = useLocation();
@@ -26,12 +21,6 @@ function App() {
   };
 
   const isLoginPage = location.pathname === "/login";
-  // const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-
-  // Jika belum login dan bukan di halaman login, langsung redirect
-  // if (!isLoggedIn && !isLoginPage) {
-  //   return <Navigate to="/login" replace />;
-  // }
 
   return (
     <div className="dark:bg-[#141625] duration-300 min-h-screen bg-[#f8f8fb]">
@@ -44,62 +33,17 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Dashboard (terproteksi) */}
-          <Route
-            path="/"
-            element={
-              // <PrivateRoute
-              <Center />
-              // </PrivateRoute>
-            }
-          />
-
-          {/* Halaman Invoices */}
-          <Route
-            path="/invoices"
-            element={
-              // <PrivateRoute>
-              <Center />
-              // </PrivateRoute>
-            }
-          />
-
-          {/* Halaman Payments */}
-          <Route
-            path="/payments"
-            element={
-              // <PrivateRoute>
-              <Center />
-              // </PrivateRoute>
-            }
-          />
-
-          {/* Halaman Report */}
-          <Route
-            path="/report"
-            element={
-              // <PrivateRoute>
-              <Report />
-              // </PrivateRoute>
-            }
-          />
-
-          {/* Invoice Detail (terproteksi) */}
-          <Route
-            path="/invoice"
-            element={
-              // <PrivateRoute>
-              <InvoiceInfo onDelete={onDelete} />
-              // </PrivateRoute>
-            }
-          />
-          <Route
-            path="/clients"
-            element={
-              // <PrivateRoute>
-              <ClientPage />
-              // </PrivateRoute>
-            }
-          />
+          <Route element={<ProtectedLayout />}>
+            <Route path="/" element={<Center />} />
+            <Route path="/invoices" element={<Center />} />
+            <Route path="/payments" element={<Center />} />
+            <Route path="/report" element={<Report />} />
+            <Route
+              path="/invoice"
+              element={<InvoiceInfo onDelete={onDelete} />}
+            />
+            <Route path="/clients" element={<ClientPage />} />
+          </Route>
         </Routes>
       </AnimatePresence>
     </div>

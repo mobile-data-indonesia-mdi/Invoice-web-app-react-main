@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo_mdi.png";
 import useAuth from "../hooks/useAuth";
@@ -8,7 +8,15 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { login } = useAuth();
+  const { login, status } = useAuth();
+
+  useEffect(() => {
+    console.log("masuk effect login");
+    console.log("status", status);
+    if (status === "authenticated") {
+      navigate("/invoices");
+    }
+  }, [status]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,7 +24,6 @@ function Login() {
     try {
       console.log("mencoba masuk", username, " ", password);
       await login(username, password);
-
     } catch (error) {
       alert("username or password is incorrect!");
     }
