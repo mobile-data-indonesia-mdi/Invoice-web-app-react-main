@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { AnimatePresence, motion, useAnimation } from "framer-motion";
-import arrowDown from "../assets/icon-arrow-down.svg";
-import plus from "../assets/plus.png";
-import InvoiceCard from "./InvoiceCard";
-import { useDispatch, useSelector } from "react-redux";
-import invoiceSlice from "../redux/invoiceSlice";
-import CreateInvoice from "./CreateInvoice";
 import { useLocation } from "react-router-dom";
+import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+
 import Sidebar from "./Sidebar";
+import CreateInvoice from "./CreateInvoice";
+import InvoiceCard from "./InvoiceCard";
 import CreatePayment from "./CreatePayment"; // Import komponen CreatePayment
 import PaymentCard from "./PaymentCard"; // Import PaymentCard
+import arrowDown from "../assets/icon-arrow-down.svg";
+import plus from "../assets/plus.png";
+
+import invoiceSlice, { fetchInvoices } from "../redux/invoiceSlice";
+import useAuth from "../hooks/useAuth";
 
 function Center() {
   const location = useLocation();
-  const from = location.state?.from || "/";
   const controls = useAnimation();
   const dispatch = useDispatch();
-  const filter = ["paid", "pending", "draft"];
+  const filter = ["paid", "unpaid", "partial"];
+  const auth = useAuth();
 
   // State Hooks
   const [isDropdown, setIsDropdown] = useState(false);
@@ -34,6 +37,11 @@ function Center() {
   const onDelete = (id) => {
     dispatch(invoiceSlice.actions.deleteInvoice({ id }));
   };
+
+  // Ambil semua invoice saat komponen dimuat
+  useEffect(() => {
+    dispatch(fetchInvoices());
+  }, [dispatch]);
 
   // Filter invoices berdasarkan status
   useEffect(() => {
@@ -68,11 +76,11 @@ function Center() {
 
   // Hitung total piutang per klien
   const piutangPerKlien = allInvoices
-    .filter((inv) => inv.status === "pending" || inv.status === "unpaid")
+    .filter((inv) => inv.payment_status === "partial" || inv.payment_status === "unpaid")
     .reduce((acc, curr) => {
       const client = curr.clientName || "Unknown";
-      const total = (curr.items || []).reduce(
-        (sum, item) => sum + item.quantity * item.price,
+      const total = (curr.invoice_details || []).reduce(
+        (sum, item) => sum + item.delivery_count * item.price_per_delivery,
         0
       );
       acc[client] = (acc[client] || 0) + total;
@@ -115,13 +123,13 @@ function Center() {
           <table className="table-auto w-full bg-white dark:bg-[#1E2139] rounded-lg">
             <thead className="bg-gray-100 dark:bg-[#252945] text-sm text-gray-600 dark:text-gray-300">
               <tr>
-                <th className="py-4">Invoice ID</th>
-                <th className="py-4">Due Date</th>
-                <th className="py-4">Client</th>
-                <th className="py-4 text-right">Total</th>
-                <th className="py-4 text-center">Status</th>
-                <th className="py-4 text-center">Action</th>
-                <th className="py-4 text-center">Void</th>
+                <th className="py-4 px-4">Invoice ID</th>
+                <th className="py-4 px-4">Due Date</th>
+                <th className="py-4 px-4">Client</th>
+                <th className="py-4 px-4 text-right">Total</th>
+                <th className="py-4 px-4 text-center">Status</th>
+                <th className="py-4 px-4 text-center">Action</th>
+                {auth.user.role === 'finance' && (<th className="py-4 px-4 text-center">Void</th>)}
               </tr>
             </thead>
             <tbody>
@@ -135,7 +143,7 @@ function Center() {
                 ) : (
                   invoices.map((invoice, index) => (
                     <motion.tr
-                      key={invoice.id}
+                      key={invoice.invoice_id}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{
                         opacity: 1,
@@ -160,7 +168,8 @@ function Center() {
         </div>
       </div>
     );
-  } else if (selectedMenu === "payments") {
+  }
+  else if (selectedMenu === "payments") {
     content = (
       <div className="mt-10 space-y-4">
         {payments.length === 0 ? (
@@ -179,14 +188,14 @@ function Center() {
   return (
     <div className="flex">
       <Sidebar selectedMenu={selectedMenu} onMenuSelect={setSelectedMenu} />
-      <div className="dark:bg-[#141625] scrollbar-hide duration-300 min-h-screen bg-[#f8f8fb] py-[34px] px-2 md:px-8 lg:px-12 lg:py-[72px] w-full">
+      <div className="dark:bg-[#141625] scrollbar-hide duration-300 min-h-screen bg-[#f8f8fb] py-[34px] px-2 lg:py-[100px] w-full">
         <motion.div
           key={location.pathname}
           initial={{ x: "0" }}
           animate={{ x: 0 }}
           exit={{ x: "-150%" }}
           transition={{ duration: 0.5 }}
-          className="max-w-3xl flex flex-col mx-auto my-auto"
+          className="max-w-3xl md:max-w-6xl mx-auto my-auto"
         >
           <div className="min-w-full max-h-[64px] flex items-center justify-between">
             <div>
@@ -226,7 +235,7 @@ function Center() {
                   {isDropdown && (
                     <motion.div
                       as="select"
-                      className="w-40 bg-white dark:bg-[#1E2139] dark:text-white flex px-6 py-4 flex-col top-[160px] lg:top-[120px] absolute shadow-2xl rounded-xl space-y-2"
+                      className="w-40 bg-white dark:bg-[#1E2139] dark:text-white flex px-6 py-4 flex-col top-[160px] lg:top-[148px] absolute shadow-2xl rounded-xl space-y-2"
                     >
                       {filter.map((item, i) => (
                         <div

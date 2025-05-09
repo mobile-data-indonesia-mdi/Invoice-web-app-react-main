@@ -1,16 +1,76 @@
-import { createSlice } from "@reduxjs/toolkit";
-import moment from "moment";
-import data from "../assets/data/data.json";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { getInvoices, getInvoiceById, createInvoice, editInvoice, toggleVoidInvoice } from "../api/invoiceAPI";
 
-const today = moment().format("YYYY-MM-DD");
+export const fetchInvoices = createAsyncThunk("invoice/fetchInvoices", async (_, { rejectWithValue }) => {
+  try {
+    console.log("Fetching all invoices...");
+    const response = await getInvoices();
+    console.log("Fetched invoices:", response);
+    return response;
+  } catch (error) {
+    console.error("Error fetching invoices:", error.response?.data || error.message);
+    return rejectWithValue(error.response.data);
+  }
+});
+
+export const fetchInvoiceById = createAsyncThunk("invoice/fetchInvoiceById", async (id, { rejectWithValue }) => {
+  try {
+    console.log("Fetching invoice with ID:", id);
+    const response = await getInvoiceById(id);
+    console.log("Fetched invoice data:", response);
+    return response;
+  } catch (error) {
+    console.error("Error fetching invoice by ID:", error.response?.data || error.message);
+    return rejectWithValue(error.response.data);
+  }
+});
+
+export const createNewInvoice = createAsyncThunk( "invoice/createInvoice", async (invoiceData, { rejectWithValue }) => {
+    try {
+      console.log("Creating new invoice with data:", invoiceData);
+      const response = await createInvoice(invoiceData);
+      console.log("Invoice created successfully:", response);
+      return response;
+    } catch (error) {
+      console.error("Error creating invoice:", error.response?.data || error.message);
+      return rejectWithValue(error.response.data);
+    }
+  });
+
+export const editExistingInvoice = createAsyncThunk("invoice/updateInvoice", async ({ id, invoiceData }, { rejectWithValue }) => {
+  try {
+    console.log("id: ", id);
+    console.log("Editing invoice with data:", invoiceData);
+    const response = await editInvoice(id, invoiceData);
+    console.log("Invoice edited successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error editing invoice:", error.response?.data || error.message);
+    return rejectWithValue(error.response.data);
+  }
+});
+
+export const toggleVoidExistingInvoice = createAsyncThunk("invoice/toggleVoidInvoice", async (id, { rejectWithValue }) => {
+  try {
+    console.log("Toggling void status for invoice ID:", id);
+    const response = await toggleVoidInvoice(id);
+    console.log("Void status toggled successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error toggling void status:", error.response?.data || error.message);
+    return rejectWithValue(error.response.data);
+  }
+});
 
 const invoiceSlice = createSlice({
   name: "invoice",
 
   initialState: {
-    allInvoice: data,
+    allInvoice: [],
     filteredInvoice: [],
     invoiceById: null,
+    loading: false,
+    error: null,
   },
 
   reducers: {
@@ -21,17 +81,10 @@ const invoiceSlice = createSlice({
         state.filteredInvoice = allInvoice;
       } else {
         const filteredData = allInvoice.filter((invoice) => {
-          return invoice.status === action.payload.status;
+          return invoice.payment_status === action.payload.status;
         });
         state.filteredInvoice = filteredData;
       }
-    },
-
-    // Ambil invoice berdasarkan ID
-    getInvoiceById: (state, action) => {
-      const { allInvoice } = state;
-      const invoice = allInvoice.find((item) => item.id === action.payload.id);
-      state.invoiceById = invoice;
     },
 
     // Hapus invoice
@@ -50,7 +103,7 @@ const invoiceSlice = createSlice({
     updateInvoiceStatus: (state, action) => {
       const { id, status } = action.payload;
       const invoiceToUpdate = state.allInvoice.find(
-        (invoice) => invoice.id === id
+        (invoice) => invoice.invoice_id === id
       );
       if (invoiceToUpdate) {
         invoiceToUpdate.status = status;
@@ -59,118 +112,114 @@ const invoiceSlice = createSlice({
       // Pastikan filteredInvoice juga diperbarui dengan status baru
       state.filteredInvoice = [...state.allInvoice];
     },
-
-    // Tambahkan invoice baru
-    addInvoice: (state, action) => {
-      const {
-        description,
-        paymentTerms,
-        clientName,
-        clientEmail,
-        senderStreet,
-        senderCity,
-        senderPostCode,
-        senderCountry,
-        clientStreet,
-        clientCity,
-        clientPostCode,
-        clientCountry,
-        item,
-        invoiceNumber,
-        createdAt,
-        dueDate,
-        currency,
-      } = action.payload;
-
-      const finalData = {
-        id: invoiceNumber,
-        createdAt,
-        paymentDue: dueDate,
-        description,
-        paymentTerms,
-        clientName,
-        clientEmail,
-        status: "pending",
-        senderAddress: {
-          street: senderStreet,
-          city: senderCity,
-          postCode: senderPostCode,
-          country: senderCountry,
-        },
-        clientAddress: {
-          street: clientStreet,
-          city: clientCity,
-          postCode: clientPostCode,
-          country: clientCountry,
-        },
-        items: item.map((i) => ({
-          ...i,
-          price: parseFloat(i.price) || 0, // Pastikan nilai price valid
-          usage: parseFloat(i.usage) || 0, // Pastikan nilai usage valid
-          total: parseFloat((i.usage || 0) * (i.price || 0)).toFixed(2),
-        })),
-        currency: currency || "USD",
-        total: item.reduce(
-          (acc, i) => acc + parseFloat((i.usage || 0) * (i.price || 0)).toFixed(2),
-          0
-        ),
-      };
-
-      state.allInvoice.push(finalData);
-    },
-
-    // Edit invoice
-    editInvoice: (state, action) => {
-      const { allInvoice } = state;
-      const {
-        description,
-        paymentTerms,
-        clientName,
-        clientEmail,
-        senderStreet,
-        senderCity,
-        senderPostCode,
-        senderCountry,
-        clientStreet,
-        clientCity,
-        clientPostCode,
-        clientCountry,
-        item,
-        id,
-        createdAt,
-        dueDate,
-        currency,
-      } = action.payload;
-
-      const invoiceIndex = allInvoice.findIndex((invoice) => invoice.id === id);
-      if (invoiceIndex !== -1) {
-        allInvoice[invoiceIndex] = {
-          ...allInvoice[invoiceIndex],
-          description,
-          paymentTerms,
-          clientName,
-          clientEmail,
-          senderAddress: {
-            street: senderStreet,
-            city: senderCity,
-            postCode: senderPostCode,
-            country: senderCountry,
-          },
-          clientAddress: {
-            street: clientStreet,
-            city: clientCity,
-            postCode: clientPostCode,
-            country: clientCountry,
-          },
-          items: item,
-          createdAt,
-          paymentDue: dueDate,
-          currency,
-          total: item.reduce((acc, i) => acc + Number(i.total), 0),
-        };
-        state.filteredInvoice = [...allInvoice]; // Perbarui filteredInvoice
-      }
-    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchInvoices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Fetching pending...");
+      })
+      .addCase(fetchInvoices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allInvoice = action.payload.data;
+        state.filteredInvoice = action.payload.data; // Set filteredInvoice to all invoices initially
+        console.log("Fetched invoices:", action.payload);
+      })
+      .addCase(fetchInvoices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.data;
+        console.error("Error fetching invoices:", action.payload);
+      })
+      .addCase(fetchInvoiceById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Fetching invoice by ID is pending...");
+      })
+      .addCase(fetchInvoiceById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.invoiceById = action.payload.data;
+        console.log("Fetched invoice by ID successfully:", action.payload);
+      })
+      .addCase(fetchInvoiceById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.data;
+        console.error("Error fetching invoice by ID:", action.payload);
+      })
+      .addCase(createNewInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Creating a new invoice is pending...");
+      })
+      .addCase(createNewInvoice.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allInvoice.push(action.payload.data);
+        console.log("New invoice created successfully:", action.payload);
+      })
+      .addCase(createNewInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.data;
+        console.error("Error creating a new invoice:", action.payload);
+      })
+      .addCase(editExistingInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Editing an existing invoice is pending...");
+      })
+      .addCase(editExistingInvoice.fulfilled, (state, action) => {
+        const id = action.meta.arg; // Get the ID from the meta argument
+        const index = state.allInvoice.findIndex((invoice) => invoice.invoice_id === id);
+        if (index !== -1) {
+          state.allInvoice[index] = { ...state.allInvoice[index], ...action.payload.data };
+          // Update filteredInvoice as well
+          const filteredIndex = state.filteredInvoice.findIndex((invoice) => invoice.invoice_id === id);
+          if (filteredIndex !== -1) {
+            state.filteredInvoice[filteredIndex] = { ...state.filteredInvoice[filteredIndex], ...action.payload.data };
+          }
+          // Reset invoiceById
+          state.invoiceById = null;
+          console.log("Invoice updated successfully:", action.payload);
+        }
+      })
+      .addCase(editExistingInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.data;
+        console.error("Error editing an existing invoice:", action.payload);
+      })
+      .addCase(toggleVoidExistingInvoice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Toggling void status is pending...");
+      })
+      .addCase(toggleVoidExistingInvoice.fulfilled, (state, action) => {
+        state.loading = false;
+        const id = action.meta.arg; // Get the ID from the meta argument
+        const voidedAt = action.payload.data.voided_at;
+        const index = state.allInvoice.findIndex((invoice) => invoice.invoice_id === id);
+        if (index !== -1) {
+          state.allInvoice[index] = {
+            ...state.allInvoice[index],
+            voided_at: voidedAt,
+          };
+          // Update filteredInvoice as well
+          const filteredIndex = state.filteredInvoice.findIndex((invoice) => invoice.invoice_id === id);
+          if (filteredIndex !== -1) {
+            state.filteredInvoice[filteredIndex]= {
+              ...state.filteredInvoice[filteredIndex],
+              voided_at: voidedAt,
+            }
+          }
+        }
+        // Reset invoiceById
+        state.invoiceById = null;
+        console.log("Void status toggled successfully:", action.payload.data);
+      })
+      .addCase(toggleVoidExistingInvoice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload.data;
+        console.error("Error toggling void status:", action.payload.data);
+      })
+      ;
   },
 });
 

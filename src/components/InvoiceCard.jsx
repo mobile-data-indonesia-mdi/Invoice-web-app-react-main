@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';   // Import useDispatch
-import invoiceSlice from '../redux/invoiceSlice';  // Import invoiceSlice
+
 import PaidStatus from './PaidStatus';
-import { formatCurrency } from '../functions/formatCurrency';
-import { FiEye, FiDownload, FiTrash2 } from 'react-icons/fi';
 import VoidModal from './VoidModal';
 import DeleteModal from './DeleteModal'; // Import DeleteModal
+
+import { toggleVoidExistingInvoice } from '../redux/invoiceSlice';  // Import invoiceSlice
+import { formatCurrency } from '../functions/formatCurrency';
+import { FiEye, FiDownload, FiTrash2 } from 'react-icons/fi';
+import useAuth from '../hooks/useAuth';
 
 function InvoiceCard({ invoice, onDelete, from }) {
   const dispatch = useDispatch();    // Inisialisasi dispatch
   const navigate = useNavigate();
+  const auth = useAuth();
+
   const [isVoidModalOpen, setIsVoidModalOpen] = useState(false);
   const [voidStatus, setVoidStatus] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State untuk modal delete
@@ -18,19 +23,19 @@ function InvoiceCard({ invoice, onDelete, from }) {
 
   // Fungsi untuk menavigasi ke halaman invoice
   const handleView = () => {
-    navigate(`/invoice?id=${invoice.id}`, { state: { from } });
+    navigate(`/invoice?id=${invoice.invoice_id}`, { state: { from } });
   };
 
   // Fungsi untuk mendownload invoice sebagai PDF
   const handleDownload = () => {
-    navigate(`/invoice?id=${invoice.id}&download=true`, { state: { from } });
+    navigate(`/invoice?id=${invoice.invoice_id}&download=true`, { state: { from } });
   };
 
   // Fungsi untuk handle aksi Void/Unvoid
   const onVoidButtonClick = () => {
-    const newStatus = invoice.status === 'void' ? 'pending' : 'void';
     // Dispatch action untuk update status invoice
-    dispatch(invoiceSlice.actions.updateInvoiceStatus({ id: invoice.id, status: newStatus }));
+    console.log("Invoice ID di card: ", invoice.invoice_id);
+    dispatch(toggleVoidExistingInvoice(invoice.invoice_id));
     setIsVoidModalOpen(false); // Tutup modal setelah aksi
   };
 
@@ -45,27 +50,27 @@ function InvoiceCard({ invoice, onDelete, from }) {
 
   return (
     <>
-      <td className="w-1/6 py-4 px-4 font-semibold text-indigo-600 dark:text-white hover:underline cursor-pointer">
-        <button onClick={handleView}>{invoice.id}</button>
+      <td className="w-1/6 py-4 px-4 font-semibold text-indigo-600 dark:text-white hover:underline cursor-pointer text-center">
+        <button onClick={handleView}>{invoice.invoice_number}</button>
       </td>
 
-      <td className="w-1/6 py-4 px-4 text-sm text-gray-500 dark:text-gray-300">
-        {invoice.paymentDue}
+      <td className="w-1/6 py-4 px-4 text-sm text-gray-500 dark:text-gray-300 text-center">
+        {invoice.due_date.split('T')[0]}
       </td>
 
-      <td className="w-1/6 py-4 px-4 text-sm text-gray-600 dark:text-gray-300">
-        {invoice.clientName}
+      <td className="w-1/6 py-4 px-4 text-sm text-gray-600 dark:text-gray-300 text-center">
+        {invoice.client?.client_name || 'N/A'}
       </td>
 
       <td className="w-1/6 py-4 px-4 font-medium text-black dark:text-white text-right">
         {formatCurrency(
-          invoice.items.reduce((sum, item) => sum + (item.usage || 0) * (item.price || 0), 0),
-          invoice.currency || 'USD'
+          invoice.total,
+          invoice.client.currency || 'USD'
         )}
       </td>
 
       <td className="w-1/6 py-4 px-4 text-center">
-        <PaidStatus type={invoice.status} />
+        <PaidStatus type={invoice.voided_at != null ? 'void' : invoice.payment_status} />
       </td>
 
       <td className="w-1/6 py-4 px-4 text-center">
@@ -86,31 +91,35 @@ function InvoiceCard({ invoice, onDelete, from }) {
             <FiDownload size={16} />
           </button>
 
-          <button
-            onClick={() => handleDelete(invoice.id)} // Memanggil handleDelete untuk modal delete
-            className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
-            title="Delete"
-          >
-            <FiTrash2 size={16} />
-          </button>
+          {auth.user.role === 'finance' && (
+            <button
+              onClick={() => handleDelete(invoice.invoice_id)} // Memanggil handleDelete untuk modal delete
+              className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900"
+              title="Delete"
+            >
+              <FiTrash2 size={16} />
+            </button>
+          )}
         </div>
       </td>
 
-      <td className="py-5 px-6 text-center">
-      <button
-        onClick={() => {
-            setVoidStatus(invoice.status === 'void' ? 'unvoid' : 'void'); 
-            setIsVoidModalOpen(true);
-        }}
-        className={`px-4 py-1 text-sm rounded-full shadow-md text-white transition-all duration-150 ${
-            invoice.status === 'void'
-            ? 'bg-gray-500 hover:bg-gray-600'
-            : 'bg-red-500 hover:bg-red-600'
-        }`}
-        >
-        {invoice.status === 'void' ? 'Unvoid' : 'Void'}
-        </button>
-      </td>
+      {auth.user.role === 'finance' && (
+        <td className="py-5 px-6 text-center">
+          <button
+            onClick={() => {
+              setVoidStatus(invoice.voided_at != null ? 'unvoid' : 'void');
+              setIsVoidModalOpen(true);
+            }}
+            className={`px-4 py-1 text-sm rounded-full shadow-md text-white transition-all duration-150 ${
+              invoice.voided_at != null
+                ? 'bg-gray-500 hover:bg-gray-600'
+                : 'bg-red-500 hover:bg-red-600'
+            }`}
+          >
+            {invoice.voided_at != null ? 'Unvoid' : 'Void'}
+          </button>
+        </td>
+      )}
 
       {isVoidModalOpen && (
         <VoidModal

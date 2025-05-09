@@ -18,8 +18,8 @@ function VoidModal({ invoice, status, onVoidButtonClick, setIsVoidModalOpen }) {
 
                 <p className="text-gray-500 font-[600] tracking-wide text-xs pt-6">
                     {isUnvoiding
-                        ? `Are you sure you want to unvoid invoice ${invoice?.invoiceNumber}?`
-                        : `Are you sure you want to void invoice ${invoice?.invoiceNumber}? This action cannot be undone.`}
+                        ? `Are you sure you want to unvoid invoice ${invoice?.invoice_number}?`
+                        : `Are you sure you want to void invoice ${invoice?.invoice_number}? This action cannot be undone.`}
                 </p>
 
                 <div className="flex w-full mt-4 items-center justify-center space-x-4">
