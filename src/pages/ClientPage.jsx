@@ -1,6 +1,6 @@
-import Sidebar from "./Sidebar";
+import Sidebar from "../components/Sidebar.jsx";
 import { useState } from "react";
-import { useApi } from "../hooks/useApi"; 
+import { useApi } from "../hooks/useApi.js";
 
 export default function ClientPage() {
   const [selectedMenu, setSelectedMenu] = useState("Client");
@@ -20,7 +20,7 @@ export default function ClientPage() {
     loading,
     error,
   } = useApi({
-    url: "http://localhost:8081/clients",
+    url: "http://localhost:8080/clients",
     method: "GET",
     trigger,
   });

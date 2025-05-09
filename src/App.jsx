@@ -9,7 +9,9 @@ import InvoiceInfo from "./components/InvoiceInfo";
 import Login from "./components/login";
 import Report from "./components/Report";
 import invoiceSlice from "./redux/invoiceSlice";
-import ClientPage from "./components/ClientPage";
+
+//Pages
+import ClientPage from "./pages/ClientPage.jsx";
 import InvoicePage from "./pages/InvoicePage";
 
 // Private route component
