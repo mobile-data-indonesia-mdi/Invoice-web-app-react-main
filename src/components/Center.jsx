@@ -4,16 +4,15 @@ import { AnimatePresence, motion, useAnimation } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 
 import Sidebar from "./Sidebar";
-import CreateInvoice from "./CreateInvoice";
-import InvoiceCard from "./InvoiceCard";
 import CreateInvoice from "./invoice/CreateInvoice.jsx";
 import InvoiceCard from "./invoice/InvoiceCard.jsx";
-import CreatePayment from "./CreatePayment"; // Import komponen CreatePayment
-import PaymentCard from "./PaymentCard"; // Import PaymentCard
+import CreatePayment from "./payment/CreatePayment.jsx"; // Import komponen CreatePayment
+import PaymentCard from "./payment/PaymentCard.jsx"; // Import PaymentCard
 import arrowDown from "../assets/icon-arrow-down.svg";
 import plus from "../assets/plus.png";
 
 import invoiceSlice, { fetchInvoices } from "../redux/invoiceSlice";
+import paymentSlice, { fetchPayments } from "../redux/paymentSlice";
 import useAuth from "../hooks/useAuth";
 
 function Center() {
@@ -30,23 +29,25 @@ function Center() {
   const [selectedMenu, setSelectedMenu] = useState("dashboard");
   const [openCreatePayment, setOpenCreatePayment] = useState(false);
 
-  // Redux Selectors
   const invoices = useSelector((state) => state.invoices.filteredInvoice);
+  // Redux Selectors
   const allInvoices = useSelector((state) => state.invoices.allInvoice);
-  const payments = useSelector((state) => state.payments.payments);
+  const payments = useSelector((state) => state.payments.allPayments);
 
   // Fungsi untuk menghapus invoice
   const onDelete = (id) => {
     dispatch(invoiceSlice.actions.deleteInvoice({ id }));
   };
 
-  // Ambil semua invoice saat komponen dimuat
   useEffect(() => {
+    // Ambil semua invoice saat komponen dimuat
     dispatch(fetchInvoices());
-  }, [dispatch]);
+    //Ambil semua pembayaran saat komponen dimuat
+    dispatch(fetchPayments());
+  }, []);
 
-  // Filter invoices berdasarkan status
   useEffect(() => {
+    // Filter invoices berdasarkan status
     dispatch(invoiceSlice.actions.filterInvoice({ status: filterValue }));
   }, [filterValue, dispatch]);
 
@@ -180,7 +181,7 @@ function Center() {
           </p>
         ) : (
           payments.map((payment) => (
-            <PaymentCard key={payment.id} payment={payment} />
+            <PaymentCard key={payment.payment_id} payment={payment} />
           ))
         )}
       </div>
