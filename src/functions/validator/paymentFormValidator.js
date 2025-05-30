@@ -27,7 +27,6 @@ function validateAmountPaid(amountPaid) {
 }
 
 function validateClientName(clientName) {
-    console.log("Validating client name:", clientName);
   if (!clientName.trim()) {
     return "Client name is required";
   }

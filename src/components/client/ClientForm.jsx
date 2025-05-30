@@ -42,7 +42,6 @@ export default function ClientForm({showModal, setShowModal}) {
 
     if(type === 'edit') {
       await dispatch(editClient({id: client.client_id, clientData: formData}));
-      console.log("Client edited successfully");
     } else {
       await dispatch(createNewClient(formData));
     }

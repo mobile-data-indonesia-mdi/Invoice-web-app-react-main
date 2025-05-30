@@ -39,8 +39,6 @@ export const createNewInvoice = createAsyncThunk( "invoice/createInvoice", async
 
 export const editInvoice = createAsyncThunk("invoice/updateInvoice", async ({ id, invoiceData }, { rejectWithValue }) => {
   try {
-    console.log("id: ", id);
-    console.log("Editing invoice with data:", invoiceData);
     const response = await editInvoiceApi(id, invoiceData);
     console.log("Invoice edited successfully:", response);
     return response;

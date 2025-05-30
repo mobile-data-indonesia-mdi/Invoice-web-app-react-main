@@ -106,7 +106,6 @@ export default function ClientTable({setShowModal}) {
 			
 		];
 
-		console.log("Auth User Role:", auth.user.role);
 		if (auth.user.role === "finance") {
 			baseColumns.push({
 				id: 'action',

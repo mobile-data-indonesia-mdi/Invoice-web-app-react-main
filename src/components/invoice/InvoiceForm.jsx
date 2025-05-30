@@ -156,7 +156,6 @@ function InvoiceForm({ setOpenCreateInvoice, invoice, type }) {
     };
 
     if (type === "edit") {
-      console.log("Editing invoice with payload:", payload.invoice_details, payload.total, payload.tax_amount, payload.sub_total);
       await dispatch(editInvoice({ id: invoice.invoice_id, invoiceData: payload }));
     } else {
       await dispatch(createNewInvoice(payload));

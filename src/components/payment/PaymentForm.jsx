@@ -251,8 +251,6 @@ export default function PaymentForm({ setOpenCreatePayment, setIsEditOpen, type 
           {/* Client Name */}
           <div>
             <label className="block text-gray-600 dark:text-gray-300 mb-1">Client Name</label>
-            {console.log("Selected Client:", selectedClient?.client_name)}
-            {console.log("Form Data Client Name:", formData.clientName)}
             <input
               type="text"
               name='clientName'

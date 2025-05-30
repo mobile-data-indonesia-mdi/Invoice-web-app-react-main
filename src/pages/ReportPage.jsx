@@ -32,7 +32,6 @@ function ReportPage() {
         inv.client?.client_name === client.client_name &&
         ((inv.payment_status === "unpaid" || inv.payment_status === "partial") && inv.voided_at === null)
     );
-    console.log("Client Invoices:", clientInvoices);
     const total = clientInvoices.reduce((sum, inv) => {
       const amountDue = inv.total - inv.amount_paid;
       return sum + (amountDue > 0 ? amountDue : 0);
