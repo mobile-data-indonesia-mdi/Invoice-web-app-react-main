@@ -1,36 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
 
 import Sidebar from "@/components/ui/Sidebar.jsx";
+import PaymentForm from "@/components/payment/PaymentForm.jsx";
+import PaymentTable from "@/components/payment/PaymentTable";
 import ContentHeader from "@/components/ui/content-header/ContentHeader.jsx";
-import InvoiceForm from "@/components/invoice/InvoiceForm.jsx";
 
-import { fetchAllInvoices } from "@/redux/invoiceSlice.js";
-import useAuth from "@/hooks/useAuth.js";
-import InvoiceTable from "@/components/invoice/InvoiceTable.jsx";
+import { fetchAllPayments } from "@/redux/paymentSlice.js";
 
-export default function InvoicePage() {
+export default function PaymentPage() {
   const location = useLocation();
   const dispatch = useDispatch();
-  const auth = useAuth();
 
   // State Hooks
-  const [openCreateInvoice, setOpenCreateInvoice] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState("invoices");
+  const [openCreatePayment, setOpenCreatePayment] = useState(false);
+  const [filterValue, setFilterValue] = useState("");
+  const [selectedMenu, setSelectedMenu] = useState("payments");
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
-  // Redux Selectors
-  const invoices = useSelector((state) => state.invoices.filteredInvoice);
-  const loading = useSelector((state) => state.invoices.loading);
-  const error = useSelector((state) => state.invoices.error);
+  // // Redux Selector
+  const payments = useSelector(state => state.payments.filteredPayment);
+  const loading = useSelector((state) => state.payments.loading);
+  const error = useSelector((state) => state.payments.error);
 
   useEffect(() => {
-    // Ambil semua invoice saat komponen dimuat
-    dispatch(fetchAllInvoices());
+    // Fetch all payments when the component mounts
+    dispatch(fetchAllPayments());
   }, [dispatch]);
 
-  return(
+  return (
     <div className="flex bg-[#f8f8fb] dark:bg-[#141625] min-h-screen">
       <Sidebar selectedMenu={selectedMenu} onMenuSelect={setSelectedMenu} />
 
@@ -44,37 +44,39 @@ export default function InvoicePage() {
           transition={{ duration: 0.5 }}
           className="max-w-full md:max-w-3xl lg:max-w-6xl mx-auto"
         >
-          {/* Content Header */}
           <ContentHeader
             selectedMenu={selectedMenu}
-            items={invoices}
-            onOpenCreateMenu={setOpenCreateInvoice}
+            items={payments}
+            filterValue={filterValue}
+            setFilterValue={setFilterValue}
+            onOpenCreateMenu={setOpenCreatePayment}
           />
             {loading ? (
                 <p className="text-center text-gray-500 dark:text-gray-400">
-                    Loading invoices...
+                  Loading payments...
                 </p>
             ) : error ? (
                 <p className="text-center text-red-500">Error fetching clients</p>
-            ) : invoices === null || invoices.length  <= 0 ? (
+            ) : payments === null || payments.length  <= 0 ? (
                 <p className="text-center text-gray-500 dark:text-gray-400">
-                    No invoices found.
+                  No payments found.
                 </p>
             ) : (
-                <InvoiceTable from={selectedMenu} />
+                <PaymentTable setIsEditOpen={setIsEditOpen} from={selectedMenu}/>
             )}
-
         </motion.div>
       </div>
       {/* End Center */}
 
       {/* Create Invoice Modal */}
       <AnimatePresence>
-        {openCreateInvoice && (
-          <InvoiceForm
-            openCreateInvoice={openCreateInvoice}
-            setOpenCreateInvoice={setOpenCreateInvoice}
+        {openCreatePayment && (
+          <PaymentForm
+            setOpenCreatePayment={setOpenCreatePayment}
           />
+        )}
+        {isEditOpen && (
+          <PaymentForm setIsEditOpen={setIsEditOpen} type="edit" />
         )}
       </AnimatePresence>
     </div>

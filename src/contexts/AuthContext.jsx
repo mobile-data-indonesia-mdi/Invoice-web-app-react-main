@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 // Tentukan baseURL secara terpisah
-const API_BASE_URL = "http://localhost:8081/users";
+const API_BASE_URL = "http://localhost:8080/users";
 
 // Membuat Context untuk autentikasi
 export const AuthContext = createContext({

@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import {getPayments, getPaymentById, createPayment, editPayment} from "../api/paymentApi.js";
+import {getAllPaymentsApi, getPaymentByIdApi, createPaymentApi, editPaymentApi, toggleVoidPaymentApi} from "@/api/paymentApi.js";
 
-export const fetchPayments = createAsyncThunk( 'payments/fetchPayments', async (_, { rejectWithValue }) => {
+export const fetchAllPayments = createAsyncThunk( 'payments/fetchAllPayments', async (_, { rejectWithValue }) => {
   try {
     console.log("Fetching all payments...");
-    const response = await getPayments();
+    const response = await getAllPaymentsApi();
     console.log("Fetched payments:", response);
     return response;
   } catch (error) {
@@ -16,7 +16,7 @@ export const fetchPayments = createAsyncThunk( 'payments/fetchPayments', async (
 export const fetchPaymentById = createAsyncThunk( 'payments/fetchPaymentById', async (id, { rejectWithValue }) => {
   try {
     console.log("Fetching payment with ID:", id);
-    const response = await getPaymentById(id);
+    const response = await getPaymentByIdApi(id);
     console.log("Fetched payment data:", response);
     return response;
   } catch (error) {
@@ -28,7 +28,7 @@ export const fetchPaymentById = createAsyncThunk( 'payments/fetchPaymentById', a
 export const createNewPayment = createAsyncThunk( 'payments/createPayment', async (paymentData, { rejectWithValue }) => {
   try {
     console.log("Creating new payment with data:", paymentData);
-    const response = await createPayment(paymentData);
+    const response = await createPaymentApi(paymentData);
     console.log("Payment created successfully:", response);
     return response;
   } catch (error) {
@@ -37,10 +37,10 @@ export const createNewPayment = createAsyncThunk( 'payments/createPayment', asyn
   }
 });
 
-export const editExistingPayment = createAsyncThunk( 'payments/updatePayment', async ({ id, paymentData }, { rejectWithValue }) => {
+export const editPayment = createAsyncThunk( 'payments/editPayment', async ({ id, paymentData }, { rejectWithValue }) => {
   try {
     console.log("Editing payment with data:", paymentData);
-    const response = await editPayment(id, paymentData);
+    const response = await editPaymentApi(id, paymentData);
     console.log("Payment edited successfully:", response);
     return response;
   } catch (error) {
@@ -49,20 +49,21 @@ export const editExistingPayment = createAsyncThunk( 'payments/updatePayment', a
   }
 });
 
-// export const toggleVoidExistingPayment = createAsyncThunk( 'payments/toggleVoidPayment', async (id, { rejectWithValue }) => {
-//   try {
-//     console.log("Toggling void status for payment ID:", id);
-//     const response = await toggleVoidPayment(id);
-//     console.log("Void status toggled successfully:", response);
-//     return response;
-//   } catch (error) {
-//     console.error("Error toggling void status:", error.response?.data || error.message);
-//     return rejectWithValue(error.response.data);
-//   }
-// });
+export const toggleVoidPayment = createAsyncThunk( 'payments/toggleVoidPayment', async (id, { rejectWithValue }) => {
+  try {
+    console.log("Toggling void status for payment ID:", id);
+    const response = await toggleVoidPaymentApi(id);
+    console.log("Void status toggled successfully:", response);
+    return response;
+  } catch (error) {
+    console.error("Error toggling void status:", error.response?.data || error.message);
+    return rejectWithValue(error.response.data);
+  }
+});
 
 const initialState = {
-  allPayments: [], // daftar semua transaksi pembayaran
+  allPayments: [],
+  filteredPayment: [], // daftar semua transaksi pembayaran
   paymentById: null, // transaksi pembayaran berdasarkan ID
   loading: false,
   error: null,
@@ -72,41 +73,51 @@ const paymentSlice = createSlice({
   name: 'payments',
   initialState,
   reducers: {
-    // Menambahkan pembayaran baru ke dalam state
-    addPayment: (state, action) => {
-      state.payments.push(action.payload);
-    },
-
-    // Menghapus pembayaran berdasarkan ID
-    deletePayment: (state, action) => {
-      state.payments = state.payments.filter(p => p.id !== action.payload.id);
-    },
-
-    // Memperbarui pembayaran berdasarkan ID
-    updatePayment: (state, action) => {
-      const index = state.payments.findIndex(p => p.id === action.payload.id);
-      if (index !== -1) {
-        state.payments[index] = action.payload;
+     // Filter berdasarkan status
+    filterPayment: (state, action) => {
+      const { allPayments } = state;
+      if (action.payload.status === "") {
+        state.filteredPayment = allPayments;
+      } else {
+        console.log("Filtering payments by status:", action.payload.status);
+        const filteredData = allPayments.filter((payment) => {
+          if (action.payload.status === "void") {
+            return payment.voided_at !== null;
+          } else if (action.payload.status === "not-void") {
+            return payment.voided_at === null;
+          }
+        });
+        state.filteredPayment = filteredData;
+        console.log("Filtered payments:", state.filteredPayment);
       }
     },
+    resetPaymentById: (state) => {
+      state.paymentById = null;
+    },
+    resetError: (state) => {
+      state.error = null;
+    }
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPayments.pending, (state) => {
+      // Case for fetching all payments
+      .addCase(fetchAllPayments.pending, (state) => {
         state.loading = true;
         state.error = null;
         console.log("Fetching pending...");
       })
-      .addCase(fetchPayments.fulfilled, (state, action) => {
+      .addCase(fetchAllPayments.fulfilled, (state, action) => {
         state.loading = false;
-        state.payments = action.payload.data;
-        console.log("Fetched payments successfully:", action.payloa);
+        state.allPayments = action.payload?.data || [];
+        state.filteredPayment = action.payload?.data || [];
+        console.log("Fetched payments successfully:", action.payload);
       })
-      .addCase(fetchPayments.rejected, (state, action) => {
+      .addCase(fetchAllPayments.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.data;
+        state.error = action.payload;
         console.error("Error fetching payments:", action.payload);
       })
+      // Case for fetching payment by ID
       .addCase(fetchPaymentById.pending, (state, action) => {
         state.loading = true;
         state.error = null;
@@ -114,14 +125,15 @@ const paymentSlice = createSlice({
       })
       .addCase(fetchPaymentById.fulfilled, (state, action) => {
         state.loading = false;
-        state.invoiceById = action.payload.data;
+        state.paymentById = action.payload.data;
         console.log("Fetched invoice by ID:", action.payload);
       })
       .addCase(fetchPaymentById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.data;
+        state.error = action.payload;
         console.error("Error fetching payment by ID:", action.payload);
       })
+      // Case for creating a new payment
       .addCase(createNewPayment.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -129,38 +141,82 @@ const paymentSlice = createSlice({
       })
       .addCase(createNewPayment.fulfilled, (state, action) => {
         state.loading = false;
-        state.payments.push(action.payload.data);
+        state.allPayments.push(action.payload.data);
         console.log("New payment created successfully:", action.payload.data);
       })
       .addCase(createNewPayment.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.data;
+        state.error = action.payload;
         console.error("Error creating payment:", action.payload);
       })
-      .addCase(editExistingPayment.pending, (state, action) => {
+      // Case for editing a payment
+      .addCase(editPayment.pending, (state) => {
         state.loading = true;
         state.error = null;
         console.log("Editing payment pending...");
       })
-      .addCase(editExistingPayment.fulfilled, (state, action) => {
+      .addCase(editPayment.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.payments.findIndex(p => p.id === action.payload.id);
+        const updatedPayment = action.payload.data;
+        const index = state.allPayments.findIndex((payment) => payment.payment_id === updatedPayment.payment_id);
+
         if (index !== -1) {
-          state.payments[index] = action.payload.data;
+          state.allPayments[index] = {
+            ...state.allPayments[index],
+            ...updatedPayment,
+          };
+
+          const filteredIndex = state.filteredPayment.findIndex((payment) => payment.payment_id === updatedPayment.payment_id);
+          if (filteredIndex !== -1) {
+            state.filteredPayment[filteredIndex] = {
+              ...state.filteredPayment[filteredIndex],
+              ...updatedPayment,
+            };
+          }
         }
         state.paymentById = null;
         console.log("Payment edited successfully:", action.payload.data);
       })
-      .addCase(editExistingPayment.rejected, (state, action) => {
+      .addCase(editPayment.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.data;
+        state.error = action.payload;
         console.error("Error editing payment:", action.payload);
+      })
+      // Case for toggling void status
+      .addCase(toggleVoidPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log("Toggling void status pending...");
+      })
+      .addCase(toggleVoidPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedPayment = action.payload.data;
+        const index = state.allPayments.findIndex((payment) => payment.payment_id === updatedPayment.payment_id);
+
+        if (index !== -1) {
+          state.allPayments[index] = {
+            ...state.allPayments[index],
+            ...updatedPayment,
+          };
+
+          const filteredIndex = state.filteredPayment.findIndex((payment) => payment.payment_id === updatedPayment.payment_id);
+          if (filteredIndex !== -1) {
+            state.filteredPayment[filteredIndex] = {
+              ...state.filteredPayment[filteredIndex],
+              ...updatedPayment,
+            };
+          }
+        }
+
+        console.log("Void status toggled successfully:", action.payload.data);
+      })
+      .addCase(toggleVoidPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        console.error("Error toggling void status:", action.payload);
       });
   }
 });
 
-// Mengekspor action yang digunakan di komponen untuk dispatch
-export const { addPayment, deletePayment, updatePayment } = paymentSlice.actions;
-
 // Mengekspor reducer untuk digunakan di store.js
-export default paymentSlice.reducer;
+export default paymentSlice;

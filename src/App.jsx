@@ -1,40 +1,19 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import {Routes, Route, useLocation, Navigate} from "react-router-dom";
 
-import Center from "./components/Center";
-import Header from "./components/Header";
-import InvoiceInfo from "./components/InvoiceInfo";
-import Login from "./components/login";
-import Report from "./components/Report";
-import invoiceSlice from "./redux/invoiceSlice";
+import LoginPage from "@/pages/LoginPage.jsx";
+import ClientPage from "@/pages/ClientPage.jsx";
+import InvoicePage from "@/pages/InvoicePage";
+import InvoiceInfo from "@/pages/InvoiceInfo.jsx";
+import PaymentPage from "@/pages/PaymentPage.jsx";
+import ReportPage from "@/pages/ReportPage.jsx";
 
-//Pages
-import ClientPage from "./pages/ClientPage.jsx";
-import InvoicePage from "./pages/InvoicePage";
-
-// Private route component
-// const PrivateRoute = ({ children }) => {
-//   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-//   return isLoggedIn ? children : <Navigate to="/login" replace />;
-// };
+import Header from "@/components/ui/Header.jsx";
 
 function App() {
   const location = useLocation();
-  const dispatch = useDispatch();
-
-  const onDelete = (id) => {
-    dispatch(invoiceSlice.actions.deleteInvoice({ id }));
-  };
-
   const isLoginPage = location.pathname === "/login";
-  // const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-
-  // Jika belum login dan bukan di halaman login, langsung redirect
-  // if (!isLoggedIn && !isLoginPage) {
-  //   return <Navigate to="/login" replace />;
-  // }
 
   return (
     <div className="dark:bg-[#141625] duration-300 min-h-screen bg-[#f8f8fb]">
@@ -43,64 +22,43 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          {/* Halaman Login */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/invoices" replace />} />
 
-          {/* Dashboard (terproteksi) */}
-          <Route
-            path="/"
+          {/* Halaman Login */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Halaman Invoices */}
+          <Route path="/invoices"
             element={
-              // <PrivateRoute
-              <Center />
-              // </PrivateRoute>
+              <InvoicePage />
             }
           />
 
-          {/* Halaman Invoices */}
-          <Route
-            path="/invoices"
+          {/* Invoice Detail */}
+          <Route path="/invoices/:invoiceId"
             element={
-              // <PrivateRoute>
-              <InvoicePage />
-              // </PrivateRoute>
+              <InvoiceInfo />
             }
           />
 
           {/* Halaman Payments */}
-          <Route
-            path="/payments"
+          <Route path="/payments"
             element={
-              // <PrivateRoute>
-              <Center />
-              // </PrivateRoute>
+              <PaymentPage />
+            }
+          />
+
+					{/* Halaman Clients */}
+          <Route path="/clients"
+            element={
+              <ClientPage />
             }
           />
 
           {/* Halaman Report */}
-          <Route
-            path="/report"
+          <Route path="/report"
             element={
-              // <PrivateRoute>
-              <Report />
-              // </PrivateRoute>
-            }
-          />
-
-          {/* Invoice Detail (terproteksi) */}
-          <Route
-            path="/invoice"
-            element={
-              // <PrivateRoute>
-              <InvoiceInfo onDelete={onDelete} />
-              // </PrivateRoute>
-            }
-          />
-          <Route
-            path="/clients"
-            element={
-              // <PrivateRoute>
-              <ClientPage />
-              // </PrivateRoute>
+              <ReportPage />
             }
           />
         </Routes>
