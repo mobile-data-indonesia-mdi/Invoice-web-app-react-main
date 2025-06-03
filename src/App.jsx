@@ -14,7 +14,7 @@ import Header from "@/components/ui/Header.jsx";
 function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
-
+  console.log("API_BASE_URL", import.meta.env.VITE_API_URL);
   return (
     <div className="dark:bg-[#141625] duration-300 min-h-screen bg-[#f8f8fb]">
       {/* Header hanya muncul di halaman selain login */}

@@ -1,17 +1,17 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080/payments";
+const API_BASE_URL = `${import.meta.env.VITE_API_URL}/payments`;
 
 export const getAllPaymentsApi = async () => {
   try {
-    const response = await axios.get(API_BASE_URL, {withCredentials: true});
+    const response = await axios.get(API_BASE_URL, { withCredentials: true });
     return response.data;
   } catch (error) {
     console.error("Error fetching payments");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
@@ -19,14 +19,16 @@ export const getAllPaymentsApi = async () => {
 
 export const getPaymentByIdApi = async (id) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${id}`, {withCredentials: true});
+    const response = await axios.get(`${API_BASE_URL}/${id}`, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching payment by ID:");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
@@ -44,9 +46,9 @@ export const createPaymentApi = async (paymentData) => {
   } catch (error) {
     console.error("Error creating payment");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
@@ -64,9 +66,9 @@ export const editPaymentApi = async (id, paymentData) => {
   } catch (error) {
     console.error("Error updating payment");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
@@ -74,14 +76,18 @@ export const editPaymentApi = async (id, paymentData) => {
 
 export const toggleVoidPaymentApi = async (id) => {
   try {
-    const response = await axios.patch(`${API_BASE_URL}/${id}/void-status`, null, { withCredentials: true });
+    const response = await axios.patch(
+      `${API_BASE_URL}/${id}/void-status`,
+      null,
+      { withCredentials: true }
+    );
     return response.data;
   } catch (error) {
     console.error("Error toggling void status");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
@@ -92,7 +98,6 @@ export const getProofOfTransferApi = async (filePath) => {
     const response = await axios.get(`${API_BASE_URL}/${filePath}`, {
       withCredentials: true,
       responseType: "blob",
-
     });
     const fileUrl = URL.createObjectURL(new Blob([response.data]));
     const newWindow = window.open(fileUrl, "_blank", "noopener,noreferrer");
@@ -103,9 +108,9 @@ export const getProofOfTransferApi = async (filePath) => {
   } catch (error) {
     console.error("Error fetching proof of transfer");
     if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.response?.status, error.message);
+      console.error("Axios error:", error.response?.status, error.message);
     } else {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
     }
     throw error;
   }
