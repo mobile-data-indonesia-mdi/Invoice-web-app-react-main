@@ -9,9 +9,12 @@ export default function useDarkMode() {
 
   useEffect(() => {
     const root = window.document.documentElement;
+    console.log("theme: ", theme);
     if (theme === "dark") {
+      console.log("dark");
       root.classList.add("dark");
     } else {
+      console.log("light");
       root.classList.remove("dark");
     }
     localStorage.setItem("theme", theme);

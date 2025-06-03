@@ -1,25 +1,18 @@
 import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
 
-import Center from "./components/Center";
-import Header from "./components/Header";
-import InvoiceInfo from "./components/InvoiceInfo";
-import Login from "./components/login";
-import Report from "./components/Report";
-import invoiceSlice from "./redux/invoiceSlice";
-import ClientPage from "./components/ClientPage";
-import ProtectedLayout from "./components/protectedLayout";
+import LoginPage from "@/pages/LoginPage.jsx";
+import ClientPage from "@/pages/ClientPage.jsx";
+import InvoicePage from "@/pages/InvoicePage";
+import InvoiceInfo from "@/pages/InvoiceInfo.jsx";
+import PaymentPage from "@/pages/PaymentPage.jsx";
+import ReportPage from "@/pages/ReportPage.jsx";
+
+import Header from "@/components/ui/Header.jsx";
 
 function App() {
   const location = useLocation();
-  const dispatch = useDispatch();
-
-  const onDelete = (id) => {
-    dispatch(invoiceSlice.actions.deleteInvoice({ id }));
-  };
-
   const isLoginPage = location.pathname === "/login";
 
   return (
@@ -29,21 +22,25 @@ function App() {
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
-          {/* Halaman Login */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/invoices" replace />} />
 
-          {/* Dashboard (terproteksi) */}
-          <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<Center />} />
-            <Route path="/invoices" element={<Center />} />
-            <Route path="/payments" element={<Center />} />
-            <Route path="/report" element={<Report />} />
-            <Route
-              path="/invoice"
-              element={<InvoiceInfo onDelete={onDelete} />}
-            />
-            <Route path="/clients" element={<ClientPage />} />
-          </Route>
+          {/* Halaman Login */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Halaman Invoices */}
+          <Route path="/invoices" element={<InvoicePage />} />
+
+          {/* Invoice Detail */}
+          <Route path="/invoices/:invoiceId" element={<InvoiceInfo />} />
+
+          {/* Halaman Payments */}
+          <Route path="/payments" element={<PaymentPage />} />
+
+          {/* Halaman Clients */}
+          <Route path="/clients" element={<ClientPage />} />
+
+          {/* Halaman Report */}
+          <Route path="/report" element={<ReportPage />} />
         </Routes>
       </AnimatePresence>
     </div>

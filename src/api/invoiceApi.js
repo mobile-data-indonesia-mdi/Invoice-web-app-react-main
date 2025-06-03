@@ -3,55 +3,70 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8081/invoices";
 
-export const getInvoices = async () => {
+export const getAllInvoicesApi = async () => {
   try {
     const response = await axios.get(API_BASE_URL, { withCredentials: true });
     return response.data;
   } catch (error) {
-    console.error("Error fetching invoices:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.status, error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
     throw error;
   }
 };
 
-export const getInvoiceById = async (id) => {
+export const getInvoiceByIdApi = async (id) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/${id}`, {
       withCredentials: true,
     });
     return response.data;
   } catch (error) {
-    console.error("Error fetching invoice by ID:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.status, error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
     throw error;
   }
 };
 
-export const createInvoice = async (invoiceData) => {
+export const createInvoiceApi = async (invoiceData) => {
   try {
     const response = await axios.post(API_BASE_URL, invoiceData, {
       withCredentials: true,
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating invoice:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.status, error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
     throw error;
   }
 };
 
-export const editInvoice = async (id, invoiceData) => {
+export const editInvoiceApi = async (id, invoiceData) => {
   try {
     const response = await axios.put(`${API_BASE_URL}/${id}`, invoiceData, {
       withCredentials: true,
     });
     return response.data;
   } catch (error) {
-    console.error("Error updating invoice:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.status, error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
     throw error;
   }
 };
 
-export const toggleVoidInvoice = async (id) => {
+export const toggleVoidInvoiceApi = async (id) => {
   try {
-    console.log("Toggling void status for invoice ID:", id);
     const response = await axios.patch(
       `${API_BASE_URL}/${id}/void-status`,
       null,
@@ -59,17 +74,11 @@ export const toggleVoidInvoice = async (id) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error toggling void status:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Axios error:", error.response?.status, error.message);
+    } else {
+      console.error("Unexpected error:", error);
+    }
     throw error;
   }
 };
-
-// export const deleteInvoice = async (id) => {
-//   try {
-//     const response = await axios.delete(`${API_BASE_URL}/${id}`);
-//     return response.data;
-//   } catch (error) {
-//     console.error("Error deleting invoice:", error);
-//     throw error;
-//   }
-// };
