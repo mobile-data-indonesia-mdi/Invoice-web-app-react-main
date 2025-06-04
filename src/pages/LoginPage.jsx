@@ -26,7 +26,7 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <img src={Logo} alt="App Logo" className="mx-auto w-24 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
+        <h2 className="text-2xl font-bold mb-2 text-black">Welcome Back</h2>
         <p className="text-gray-500 mb-6">Login to your account</p>
 
         <form onSubmit={handleLogin}>
