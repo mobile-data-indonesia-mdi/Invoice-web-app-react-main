@@ -5,7 +5,6 @@ import moment from "moment/moment.js";
 
 import paymentSlice, { createNewPayment, editPayment, fetchAllPayments } from '@/redux/paymentSlice.js';  // <-- import the action
 import { paymentFormValidator } from '@/functions/validator/paymentFormValidator.js';
-import { use } from 'react';
 import { fetchAllInvoices } from '@/redux/invoiceSlice';
 
 // Validation function
@@ -23,6 +22,7 @@ export default function PaymentForm({ setOpenCreatePayment, setIsEditOpen, type 
 
   // Redux Selector
   const allInvoices = useSelector(state => state.invoices.allInvoices);
+  console.log(allInvoices);
   const payment = type === "edit" ? useSelector(state => state.payments.paymentById) : {};
   const invoice = payment?.invoice || {};
   const client = invoice?.client || {};
@@ -115,6 +115,12 @@ export default function PaymentForm({ setOpenCreatePayment, setIsEditOpen, type 
       dispatch(fetchAllInvoices());
     }
   }, [allInvoices?.length, dispatch]);
+
+  useEffect(() => {
+    if (!allInvoices[allInvoices.length-1].client) {
+      dispatch(fetchAllInvoices());
+    }
+  }, [allInvoices?.length, dispatch()]);
 
   useEffect(() => {
     function handleClickOutside(event) {
