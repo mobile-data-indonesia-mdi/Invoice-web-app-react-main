@@ -26,7 +26,7 @@ pipeline {
                 """
             }
         }
-
+// 
         stage('Push Docker Image') {
             steps {
                 withCredentials([string(credentialsId: 'DOCKERHUB', variable: 'DOCKERHUB')]) {
