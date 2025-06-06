@@ -15,7 +15,7 @@ pipeline {
         stage('Callout ') {
             steps {
                 sh """
-                    echo "from frontend"
+                    echo from frontend
                 """
             }
         }
