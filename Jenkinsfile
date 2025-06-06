@@ -2,8 +2,13 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "invoice-fe-mdi"
+        DEPLOY_SERVER = "20.92.226.61"
+        DEPLOY_USER = "mdi"
+        IMAGE_NAME = "invoice-be-mdi"
         IMAGE_TAG = "latest"
+        SSH_KEY = "mdi-ssh-key"
+        DEPLOY_PATH = "/home/mdi/invoice-mdi"
+
     }
 
     stages {
@@ -14,7 +19,7 @@ pipeline {
                 """
             }
         }
-        
+
         stage('Push Docker Image') {
             steps {
                 withCredentials([string(credentialsId: 'DOCKERHUB', variable: 'DOCKERHUB')]) {
@@ -26,6 +31,27 @@ pipeline {
                 }
             }
         }
+
+        stage('Send Docker Compose') {
+            steps {
+                sshagent (credentials: ["${SSH_KEY}"]) {
+                    sh """
+                    scp -o StrictHostKeyChecking=no docker-compose.yaml ${DEPLOY_USER}@${DEPLOY_SERVER}:${DEPLOY_PATH}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy via SSH') {
+            steps {
+                sshagent (credentials: ["${SSH_KEY}"]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} \\
+                        'cd ${DEPLOY_PATH} && docker compose pull && docker compose up --build -d'
+                    """
+                }
+            }
+        }
     }
 }
-
+///

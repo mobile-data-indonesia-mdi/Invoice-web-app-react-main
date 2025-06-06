@@ -39,7 +39,7 @@ const AuthProvider = ({ children }) => {
       setStatus("authenticated");
       navigate("/invoices");
     } catch (err) {
-      console.log("test");
+      // console.log("test");
       errorHandler(err);
     }
   };
