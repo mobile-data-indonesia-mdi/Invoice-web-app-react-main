@@ -4,7 +4,7 @@ pipeline {
     environment {
         DEPLOY_SERVER = "20.92.226.61"
         DEPLOY_USER = "mdi"
-        IMAGE_NAME = "invoice-be-mdi"
+        IMAGE_NAME = "invoice-fe-mdi"
         IMAGE_TAG = "latest"
         SSH_KEY = "mdi-ssh-key"
         DEPLOY_PATH = "/home/mdi/invoice-mdi"
