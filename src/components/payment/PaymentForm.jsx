@@ -111,16 +111,10 @@ export default function PaymentForm({ setOpenCreatePayment, setIsEditOpen, type 
   };
 
   useEffect(() => {
-    if (!allInvoices || allInvoices.length === 0) {
+    if (!allInvoices || allInvoices.length === 0 || !allInvoices[allInvoices.length-1].client) {
       dispatch(fetchAllInvoices());
     }
   }, [allInvoices?.length, dispatch]);
-
-  useEffect(() => {
-    if (!allInvoices[allInvoices.length-1].client) {
-      dispatch(fetchAllInvoices());
-    }
-  }, [allInvoices?.length, dispatch()]);
 
   useEffect(() => {
     function handleClickOutside(event) {
