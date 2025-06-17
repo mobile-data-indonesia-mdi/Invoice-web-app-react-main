@@ -10,7 +10,7 @@ pipeline {
         DEPLOY_PATH = "/home/mdi/invoice-mdi"
 
     }
-//
+
     stages {
         stage('Callout ') {
             steps {
