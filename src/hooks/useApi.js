@@ -1,34 +1,36 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+// useApi.js
+import { useState, useEffect, useRef } from "react";
+import { apiClient } from "./api";
 
-export function useApi({
-  url,
-  method = "GET",
-  body = null,
-  trigger,
-  withCredentials = true,
-}) {
+export function useApi({ url, method = "GET", body = null, trigger }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const cancelSource = useRef(null);
 
   useEffect(() => {
-    const source = axios.CancelToken.source();
     let isMounted = true;
+    cancelSource.current = apiClient.CancelToken.source();
 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios({
+        setError(null);
+
+        const response = await apiClient({
           url,
           method,
           data: body,
-          withCredentials,
-          cancelToken: source.token,
+          cancelToken: cancelSource.current.token,
         });
-        if (isMounted) setData(response.data.data || response.data);
+
+        if (isMounted) {
+          setData(response.data?.data || response.data);
+        }
       } catch (err) {
-        if (isMounted && !axios.isCancel(err)) setError(err);
+        if (isMounted && !axios.isCancel(err)) {
+          setError(err);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -38,7 +40,7 @@ export function useApi({
 
     return () => {
       isMounted = false;
-      source.cancel("Request cancelled");
+      cancelSource.current?.cancel("Component unmounted");
     };
   }, [url, method, JSON.stringify(body), trigger]);
 

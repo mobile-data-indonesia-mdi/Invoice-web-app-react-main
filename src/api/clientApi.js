@@ -1,65 +1,48 @@
-import axios from "axios";
-
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/clients`;
+// src/api/clientService.js
+import { apiClient } from "./api"; // pastikan path-nya benar
 
 export const getAllClientsApi = async () => {
   try {
-    const response = await axios.get(API_BASE_URL, { withCredentials: true });
+    const response = await apiClient.get("/clients");
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.status, error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
-    throw error;
+    handleError(error);
   }
 };
 
 export const getClientByIdApi = async (id) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${id}`, {
-      withCredentials: true,
-    });
+    const response = await apiClient.get(`/clients/${id}`);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.status, error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
-    throw error;
+    handleError(error);
   }
 };
 
 export const createClientApi = async (clientData) => {
   try {
-    const response = await axios.post(API_BASE_URL, clientData, {
-      withCredentials: true,
-    });
+    const response = await apiClient.post("/clients", clientData);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.status, error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
-    throw error;
+    handleError(error);
   }
 };
 
 export const editClientApi = async (id, clientData) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/${id}`, clientData, {
-      withCredentials: true,
-    });
+    const response = await apiClient.put(`/clients/${id}`, clientData);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error:", error.response?.status, error.message);
-    } else {
-      console.error("Unexpected error:", error);
-    }
-    throw error;
+    handleError(error);
   }
+};
+
+// Reusable error handler
+const handleError = (error) => {
+  if (error.response) {
+    console.error("API error:", error.response.status, error.message);
+  } else {
+    console.error("Unexpected error:", error);
+  }
+  throw error;
 };
